@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class InGameProductData : ScriptableObject
 {
+    public Texture iconImage;
+    public Texture previewImage;
     public int price;
     public bool isLock;
     public virtual bool IsUnlock()
