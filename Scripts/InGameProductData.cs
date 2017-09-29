@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InGameProductData : ScriptableObject
+public class InGameProductData : BaseProductData
 {
-    public Texture iconImage;
-    public Texture previewImage;
     public int price;
     public bool isLock;
     public virtual bool IsUnlock()

@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Purchasing;
 
-public class IapProductData : ScriptableObject
+public class IapProductData : BaseProductData
 {
-    public Texture iconImage;
-    public Texture previewImage;
     [HideInInspector]
     public string productId;
 
