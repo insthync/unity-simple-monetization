@@ -4,10 +4,11 @@ using UnityEngine;
 
 public abstract class BaseProductData : ScriptableObject
 {
-    public string title;
-    [TextArea]
-    public string description;
     public string category;
-    public Texture iconImage;
-    public Texture previewImage;
+    public Texture iconTexture;
+    public Texture previewTexture;
+    public abstract string GetId();
+    public abstract string GetTitle();
+    public abstract string GetDescription();
+    public abstract string GetPriceText();
 }

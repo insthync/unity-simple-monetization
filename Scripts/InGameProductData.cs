@@ -1,9 +1,13 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class InGameProductData : BaseProductData
 {
+    public string title;
+    [TextArea]
+    public string description;
     public int price;
     public bool isLock;
     public virtual bool IsUnlock()
@@ -30,5 +34,25 @@ public class InGameProductData : BaseProductData
         MonetizationSave.AddHardCurrency(-price);
         Unlock();
         return true;
+    }
+
+    public override string GetId()
+    {
+        return name;
+    }
+
+    public override string GetTitle()
+    {
+        return title;
+    }
+
+    public override string GetDescription()
+    {
+        return description;
+    }
+
+    public override string GetPriceText()
+    {
+        return price.ToString("N0");
     }
 }
