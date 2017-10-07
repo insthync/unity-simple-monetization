@@ -18,6 +18,7 @@ public class IapManager : MonoBehaviour, IStoreListener
     public static IExtensionProvider StoreExtensionProvider { get; private set; }
     public static System.Action<bool, string> PurchaseCallback;
     public static System.Action<bool, string> RestoreCallback;
+    public int startCurrency = 0;
     public List<IapProductData> products;
     public readonly Dictionary<string, IapProductData> Products = new Dictionary<string, IapProductData>();
     private void Awake()
@@ -170,7 +171,7 @@ public class IapManager : MonoBehaviour, IStoreListener
         IapProductData product = null;
         if (Products.TryGetValue(productId, out product))
         {
-            MonetizationSave.AddHardCurrency(product.hardCurrency);
+            MonetizationSave.AddCurrency(product.currency);
             foreach (var item in product.items)
             {
                 MonetizationSave.AddPurchasedItem(item.name);

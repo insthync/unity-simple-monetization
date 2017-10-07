@@ -46,7 +46,7 @@ public class IapProductData : BaseProductData
             return ProductData.metadata;
         }
     }
-    public int hardCurrency;
+    public int currency;
     public List<InGameProductData> items;
 
     public override string GetId()

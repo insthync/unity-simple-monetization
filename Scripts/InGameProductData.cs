@@ -9,6 +9,7 @@ public class InGameProductData : BaseProductData
     public string description;
     public int price;
     public bool isLock;
+    public bool canBuyOnlyOnce;
     public virtual bool IsUnlock()
     {
         var list = MonetizationSave.GetPurchasedItems();
@@ -17,8 +18,10 @@ public class InGameProductData : BaseProductData
 
     public virtual bool CanBuy()
     {
-        var hardCurrency = MonetizationSave.GetHardCurrency();
-        return hardCurrency >= price;
+        var currency = MonetizationSave.GetCurrency();
+        if (canBuyOnlyOnce)
+            return !IsUnlock() && currency >= price;
+        return currency >= price;
     }
 
     public virtual void Unlock()
@@ -54,7 +57,7 @@ public class InGameProductData : BaseProductData
                 callback(false, "Cannot buy item.");
             return;
         }
-        MonetizationSave.AddHardCurrency(-price);
+        MonetizationSave.AddCurrency(-price);
         Unlock();
         if (callback != null)
             callback(true, string.Empty);

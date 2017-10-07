@@ -4,40 +4,68 @@ using UnityEngine;
 
 public class MonetizationSave
 {
-    public const string KeyHardCurrencyName = "SaveHardCurrency";
+    [System.Serializable]
+    public class PurchasedItems
+    {
+        public List<string> itemNames = new List<string>();
+        public void Add(string itemName)
+        {
+            if (itemNames != null)
+                itemNames.Add(itemName);
+        }
+
+        public bool Remove(string itemName)
+        {
+            if (itemNames == null)
+                return false;
+            return itemNames.Remove(itemName);
+        }
+
+        public bool Contains(string itemName)
+        {
+            if (itemNames == null)
+                return false;
+            return itemNames.Contains(itemName);
+        }
+    }
+    public const string KeyCurrencyName = "SaveCurrency";
     public const string KeyPurchasedItemsName = "SavePurchasedItems";
 
-    public static int GetHardCurrency()
+    public static int GetCurrency()
     {
-        return PlayerPrefs.GetInt(KeyHardCurrencyName, 0);
+        return PlayerPrefs.GetInt(KeyCurrencyName, IapManager.Singleton.startCurrency);
     }
 
-    public static void SetHardCurrency(int amount)
+    public static void SetCurrency(int amount)
     {
-        PlayerPrefs.SetInt(KeyHardCurrencyName, amount);
+        PlayerPrefs.SetInt(KeyCurrencyName, amount);
         PlayerPrefs.Save();
     }
 
-    public static bool AddHardCurrency(int amount)
+    public static bool AddCurrency(int amount)
     {
-        var newAmount = GetHardCurrency() + amount;
+        var newAmount = GetCurrency() + amount;
         if (newAmount < 0)
             return false;
-        SetHardCurrency(newAmount);
+        SetCurrency(newAmount);
         return true;
     }
 
-    public static List<string> GetPurchasedItems()
+    public static PurchasedItems GetPurchasedItems()
     {
-        var result = JsonUtility.FromJson<List<string>>(PlayerPrefs.GetString(KeyPurchasedItemsName, "{}"));
+        var json = PlayerPrefs.GetString(KeyPurchasedItemsName, "{}");
+        Debug.Log("[Monetization] Loading Items From Json: " + json);
+        var result = JsonUtility.FromJson<PurchasedItems>(json);
         if (result == null)
-            result = new List<string>();
+            result = new PurchasedItems();
         return result;
     }
 
-    public static void SetPurchasedItems(List<string> purchasedItems)
+    public static void SetPurchasedItems(PurchasedItems purchasedItems)
     {
-        PlayerPrefs.SetString(KeyPurchasedItemsName, JsonUtility.ToJson(purchasedItems));
+        var json = JsonUtility.ToJson(purchasedItems);
+        Debug.Log("[Monetization] Saving Items To Json: " + json);
+        PlayerPrefs.SetString(KeyPurchasedItemsName, json);
         PlayerPrefs.Save();
     }
 

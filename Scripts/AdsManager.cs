@@ -7,7 +7,7 @@ public class AdsManager : MonoBehaviour
 {
     public const string PlacementRewardedVideo = "RewardedVideoPlacement";
     public static AdsManager Singleton { get; private set; }
-    public int rewardHardCurrency;
+    public int rewardCurrency;
     private void Awake()
     {
         if (Singleton != null)
@@ -80,7 +80,7 @@ public class AdsManager : MonoBehaviour
         ShowAd(PlacementRewardedVideo, (result) =>
         {
             if (result == RemakeShowResult.Finished)
-                MonetizationSave.AddHardCurrency(Singleton.rewardHardCurrency);
+                MonetizationSave.AddCurrency(Singleton.rewardCurrency);
             if (showResultHandler != null)
                 showResultHandler(result);
         });
