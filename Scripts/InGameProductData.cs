@@ -27,15 +27,6 @@ public class InGameProductData : BaseProductData
         MonetizationSave.AddPurchasedItem(name);
     }
 
-    public virtual bool Buy()
-    {
-        if (!CanBuy())
-            return false;
-        MonetizationSave.AddHardCurrency(-price);
-        Unlock();
-        return true;
-    }
-
     public override string GetId()
     {
         return name;
@@ -54,5 +45,14 @@ public class InGameProductData : BaseProductData
     public override string GetPriceText()
     {
         return price.ToString("N0");
+    }
+
+    public override bool Buy()
+    {
+        if (!CanBuy())
+            return false;
+        MonetizationSave.AddHardCurrency(-price);
+        Unlock();
+        return true;
     }
 }

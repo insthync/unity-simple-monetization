@@ -11,4 +11,5 @@ public abstract class BaseProductData : ScriptableObject
     public abstract string GetTitle();
     public abstract string GetDescription();
     public abstract string GetPriceText();
+    public abstract bool Buy();
 }

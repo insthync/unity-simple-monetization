@@ -81,4 +81,9 @@ public class IapProductData : BaseProductData
             return "N/A";
         return Metadata.localizedPriceString;
     }
+
+    public override bool Buy()
+    {
+        return false;
+    }
 }
