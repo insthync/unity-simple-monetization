@@ -47,12 +47,17 @@ public class InGameProductData : BaseProductData
         return price.ToString("N0");
     }
 
-    public override bool Buy()
+    public override void Buy(System.Action<bool> result)
     {
         if (!CanBuy())
-            return false;
+        {
+            if (result != null)
+                result(false);
+            return;
+        }
         MonetizationSave.AddHardCurrency(-price);
         Unlock();
-        return true;
+        if (result != null)
+            result(true);
     }
 }

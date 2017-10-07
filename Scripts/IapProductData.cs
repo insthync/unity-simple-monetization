@@ -82,8 +82,7 @@ public class IapProductData : BaseProductData
         return Metadata.localizedPriceString;
     }
 
-    public override bool Buy()
+    public override void Buy(System.Action<bool> result)
     {
-        return false;
     }
 }
