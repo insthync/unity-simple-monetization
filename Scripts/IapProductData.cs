@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Purchasing;
@@ -82,7 +81,9 @@ public class IapProductData : BaseProductData
         return Metadata.localizedPriceString;
     }
 
-    public override void Buy(System.Action<bool> result)
+    public override void Buy(System.Action<bool, string> callback)
     {
+        IapManager.PurchaseCallback = callback;
+        IapManager.Singleton.Purchase(productId);
     }
 }

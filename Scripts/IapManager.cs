@@ -10,9 +10,14 @@ public class IapManager : MonoBehaviour, IStoreListener
     // -- Non-Consumable product is product such as special characters/items
     // that player will buy it to unlock ability to use and will not buy it later
     // -- Subscription product is product such as weekly/monthly promotion
+    public const string TAG_INIT = "IAP_INIT";
+    public const string TAG_PURCHASE = "IAP_PURCHASE";
+    public const string TAG_RESTORE = "IAP_RESTORE";
     public static IapManager Singleton { get; private set; }
     public static IStoreController StoreController { get; private set; }
     public static IExtensionProvider StoreExtensionProvider { get; private set; }
+    public static System.Action<bool, string> PurchaseCallback;
+    public static System.Action<bool, string> RestoreCallback;
     public List<IapProductData> products;
     public readonly Dictionary<string, IapProductData> Products = new Dictionary<string, IapProductData>();
     private void Awake()
@@ -31,10 +36,7 @@ public class IapManager : MonoBehaviour, IStoreListener
     {
         // If we have already connected to Purchasing ...
         if (IsInitialized())
-        {
-            // ... we are done here.
             return;
-        }
 
         // Create a builder, first passing in a suite of Unity provided stores.
         var module = StandardPurchasingModule.Instance();
@@ -67,10 +69,34 @@ public class IapManager : MonoBehaviour, IStoreListener
         UnityPurchasing.Initialize(this, builder);
     }
 
-    private bool IsInitialized()
+    public static bool IsInitialized()
     {
         // Only say we are initialized if both the Purchasing references are set.
         return StoreController != null && StoreExtensionProvider != null;
+    }
+
+    public void Purchase(string productId)
+    {
+        // If Purchasing has not yet been set up ...
+        if (!IsInitialized())
+        {
+            // ... report the situation and stop restoring. Consider either waiting longer, or retrying initialization.
+            var errorMessage = "[" + TAG_PURCHASE + "]: FAIL. Not initialized.";
+            PurchaseResult(false, errorMessage);
+            return;
+        }
+
+        var product = StoreController.products.WithID(productId);
+        if (product != null && product.availableToPurchase)
+        {
+            Debug.Log(string.Format("[" + TAG_PURCHASE + "] Purchasing product asychronously: '{0}'", product.definition.id));
+            StoreController.InitiatePurchase(product);
+        }
+        else
+        {
+            var errorMessage = "[" + TAG_PURCHASE + "]: FAIL. Not purchasing product, either is not found or is not available for purchase.";
+            RestoreResult(false, errorMessage);
+        }
     }
 
     // Restore purchases previously made by this customer. Some platforms automatically restore purchases, like Google. 
@@ -81,33 +107,41 @@ public class IapManager : MonoBehaviour, IStoreListener
         if (!IsInitialized())
         {
             // ... report the situation and stop restoring. Consider either waiting longer, or retrying initialization.
-            Debug.LogError("RestorePurchases FAIL. Not initialized.");
+            var errorMessage = "[" + TAG_RESTORE + "]: FAIL. Not initialized.";
+            RestoreResult(false, errorMessage);
             return;
         }
 
-        // If we are running on an Apple device ... 
-        if (Application.platform == RuntimePlatform.IPhonePlayer ||
-            Application.platform == RuntimePlatform.OSXPlayer)
+        if (Application.platform == RuntimePlatform.WSAPlayerX86 || Application.platform == RuntimePlatform.WSAPlayerX64 || Application.platform == RuntimePlatform.WSAPlayerARM)
         {
-            // ... begin restoring purchases
-            Debug.Log("RestorePurchases started ...");
-
-            // Fetch the Apple store-specific subsystem.
-            var apple = StoreExtensionProvider.GetExtension<IAppleExtensions>();
-            // Begin the asynchronous process of restoring purchases. Expect a confirmation response in 
-            // the Action<bool> below, and ProcessPurchase if there are previously purchased products to restore.
-            apple.RestoreTransactions((result) => {
-                // The first phase of restoration. If no more responses are received on ProcessPurchase then 
-                // no purchases are available to be restored.
-                Debug.Log("RestorePurchases continuing: " + result + ". If no further messages, no purchases available to restore.");
+            StoreExtensionProvider.GetExtension<IMicrosoftExtensions>().RestoreTransactions();
+        }
+        else if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.OSXPlayer || Application.platform == RuntimePlatform.tvOS)
+        {
+            StoreExtensionProvider.GetExtension<IAppleExtensions>().RestoreTransactions(OnTransactionsRestored);
+        }
+        else if (Application.platform == RuntimePlatform.Android && StandardPurchasingModule.Instance().appStore == AppStore.SamsungApps)
+        {
+            StoreExtensionProvider.GetExtension<ISamsungAppsExtensions>().RestoreTransactions(OnTransactionsRestored);
+        }
+        else if (Application.platform == RuntimePlatform.Android && StandardPurchasingModule.Instance().appStore == AppStore.CloudMoolah)
+        {
+            StoreExtensionProvider.GetExtension<IMoolahExtension>().RestoreTransactionID((restoreTransactionIDState) =>
+            {
+                OnTransactionsRestored(restoreTransactionIDState != RestoreTransactionIDState.RestoreFailed && restoreTransactionIDState != RestoreTransactionIDState.NotKnown);
             });
         }
-        // Otherwise ...
         else
         {
-            // We are not running on an Apple device. No work is necessary to restore purchases.
-            Debug.LogError("RestorePurchases FAIL. Not supported on this platform. Current = " + Application.platform);
+            var errorMessage = "[" + TAG_RESTORE + "]: FAIL. Platform: " + Application.platform.ToString() + " is not a supported platform for the Codeless IAP restore button";
+            RestoreResult(false, errorMessage);
         }
+    }
+
+    private void OnTransactionsRestored(bool success)
+    {
+        var errorMessage = success ? "" : "";
+        RestoreResult(success, errorMessage);
     }
 
     #region IStoreListener
@@ -124,7 +158,8 @@ public class IapManager : MonoBehaviour, IStoreListener
     public void OnInitializeFailed(InitializationFailureReason error)
     {
         // Purchasing set-up has not succeeded. Check error for reason. Consider sharing this reason with the user.
-        Debug.LogError("OnInitializeFailed InitializationFailureReason:" + error);
+        var errorMessage = "[" + TAG_INIT + "]: Fail. InitializationFailureReason:" + error;
+        Debug.LogError(errorMessage);
     }
 
 
@@ -144,16 +179,39 @@ public class IapManager : MonoBehaviour, IStoreListener
 
         // Return a flag indicating whether this product has completely been received, or if the application needs 
         // to be reminded of this purchase at next app launch. Use PurchaseProcessingResult.Pending when still 
-        // saving purchased products to the cloud, and when that save is delayed. 
+        // saving purchased products to the cloud, and when that save is delayed.
+        PurchaseResult(true);
         return PurchaseProcessingResult.Complete;
     }
-
 
     public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
     {
         // A product purchase attempt did not succeed. Check failureReason for more detail. Consider sharing 
         // this reason with the user to guide their troubleshooting actions.
-        Debug.Log(string.Format("OnPurchaseFailed: FAIL. Product: '{0}', PurchaseFailureReason: {1}", product.definition.storeSpecificId, failureReason));
+        var errorMessage = "[" + TAG_PURCHASE + "]: FAIL. Product: " + product.definition.storeSpecificId + ", PurchaseFailureReason: " + failureReason;
+        PurchaseResult(false, errorMessage);
     }
     #endregion
+
+    private static void PurchaseResult(bool success, string errorMessage = "")
+    {
+        if (!success)
+            Debug.LogError(errorMessage);
+        if (PurchaseCallback != null)
+        {
+            PurchaseCallback(success, errorMessage);
+            PurchaseCallback = null;
+        }
+    }
+
+    private static void RestoreResult(bool success, string errorMessage = "")
+    {
+        if (!success)
+            Debug.LogError(errorMessage);
+        if (RestoreCallback != null)
+        {
+            RestoreCallback(success, errorMessage);
+            RestoreCallback = null;
+        }
+    }
 }

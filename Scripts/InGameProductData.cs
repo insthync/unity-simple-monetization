@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -47,17 +46,17 @@ public class InGameProductData : BaseProductData
         return price.ToString("N0");
     }
 
-    public override void Buy(System.Action<bool> result)
+    public override void Buy(System.Action<bool, string> callback)
     {
         if (!CanBuy())
         {
-            if (result != null)
-                result(false);
+            if (callback != null)
+                callback(false, "Cannot buy item.");
             return;
         }
         MonetizationSave.AddHardCurrency(-price);
         Unlock();
-        if (result != null)
-            result(true);
+        if (callback != null)
+            callback(true, string.Empty);
     }
 }
