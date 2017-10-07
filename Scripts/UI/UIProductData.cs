@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class UIProductData : MonoBehaviour
@@ -11,6 +12,9 @@ public class UIProductData : MonoBehaviour
     public Text textPrice;
     public RawImage iconImage;
     public RawImage previewImage;
+    [Header("Events")]
+    public UnityEvent OnBuySuccess;
+    public UnityEvent<string> OnBuyFailed;
     [Header("Product Data")]
     public BaseProductData productData;
     private BaseProductData dirtyProductData;
@@ -49,5 +53,19 @@ public class UIProductData : MonoBehaviour
             iconImage.texture = iconTexture;
         if (previewImage != null)
             previewImage.texture = previewTexture;
+    }
+
+    public void OnClickBuy()
+    {
+        if (productData != null)
+            productData.Buy(BuyResult);
+    }
+
+    private void BuyResult(bool success, string errorMessage)
+    {
+        if (success)
+            OnBuySuccess.Invoke();
+        else
+            OnBuyFailed.Invoke(errorMessage);
     }
 }
