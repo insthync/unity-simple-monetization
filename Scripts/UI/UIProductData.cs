@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class UIProductData : MonoBehaviour
@@ -12,12 +11,11 @@ public class UIProductData : MonoBehaviour
     public Text textPrice;
     public RawImage iconImage;
     public RawImage previewImage;
-    [Header("Events")]
-    public UnityEvent OnBuySuccess;
-    public UnityEvent<string> OnBuyFailed;
     [Header("Product Data")]
     public BaseProductData productData;
     private BaseProductData dirtyProductData;
+    [HideInInspector]
+    public UIProductList list;
 
     private void Update()
     {
@@ -64,8 +62,8 @@ public class UIProductData : MonoBehaviour
     private void BuyResult(bool success, string errorMessage)
     {
         if (success)
-            OnBuySuccess.Invoke();
+            list.onPurchaseSuccess.Invoke();
         else
-            OnBuyFailed.Invoke(errorMessage);
+            list.onPurchaseFail.Invoke(errorMessage);
     }
 }
