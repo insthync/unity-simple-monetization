@@ -5,6 +5,18 @@ using UnityEngine.Purchasing;
 
 public class MonetizationManager : MonoBehaviour, IStoreListener
 {
+    /// <summary>
+    /// This is remake of `ShowResult` enum.
+    /// Will uses when Unity's Ads not available for some platforms (such as standalone)
+    /// to avoid compile errors.
+    /// </summary>
+    public enum RemakeShowResult
+    {
+        Finished,
+        Skipped,
+        Failed,
+        NotReady,
+    }
     // NOTE: something about product type
     // -- Consumable product is product such as gold, gem that can be consumed
     // -- Non-Consumable product is product such as special characters/items
@@ -37,10 +49,11 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         InitializeCurrencies();
     }
 
+    #region Initailize functions
     private void InitializePurchasing()
     {
         // If we have already connected to Purchasing ...
-        if (IsInitialized())
+        if (IsPurchasingInitialized())
             return;
 
         // Create a builder, first passing in a suite of Unity provided stores.
@@ -82,6 +95,14 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         }
     }
 
+    public static bool IsPurchasingInitialized()
+    {
+        // Only say we are initialized if both the Purchasing references are set.
+        return StoreController != null && StoreExtensionProvider != null;
+    }
+    #endregion
+
+    #region ADS Actions
 #if UNITY_ADS
     private static RemakeShowResult ConvertToRemakeShowResult(ShowResult result)
     {
@@ -148,30 +169,13 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
                 showResultHandler(result);
         });
     }
+    #endregion
 
-    /// <summary>
-    /// This is remake of `ShowResult` enum.
-    /// Will uses when Unity's Ads not available for some platforms (such as standalone)
-    /// to avoid compile errors.
-    /// </summary>
-    public enum RemakeShowResult
-    {
-        Finished,
-        Skipped,
-        Failed,
-        NotReady,
-    }
-
-    public static bool IsInitialized()
-    {
-        // Only say we are initialized if both the Purchasing references are set.
-        return StoreController != null && StoreExtensionProvider != null;
-    }
-
+    #region IAP Actions
     public void Purchase(string productId)
     {
         // If Purchasing has not yet been set up ...
-        if (!IsInitialized())
+        if (!IsPurchasingInitialized())
         {
             // ... report the situation and stop restoring. Consider either waiting longer, or retrying initialization.
             var errorMessage = "[" + TAG_PURCHASE + "]: FAIL. Not initialized.";
@@ -197,7 +201,7 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
     public void RestorePurchases()
     {
         // If Purchasing has not yet been set up ...
-        if (!IsInitialized())
+        if (!IsPurchasingInitialized())
         {
             // ... report the situation and stop restoring. Consider either waiting longer, or retrying initialization.
             var errorMessage = "[" + TAG_RESTORE + "]: FAIL. Not initialized.";
@@ -236,6 +240,7 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         var errorMessage = success ? "" : "";
         RestoreResult(success, errorMessage);
     }
+    #endregion
 
     #region IStoreListener
     public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
@@ -286,6 +291,7 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
     }
     #endregion
 
+    #region Callback Events
     private static void PurchaseResult(bool success, string errorMessage = "")
     {
         if (!success)
@@ -307,4 +313,5 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
             RestoreCallback = null;
         }
     }
+    #endregion
 }

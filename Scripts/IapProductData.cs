@@ -46,6 +46,7 @@ public class IapProductData : BaseProductData
             return ProductData.metadata;
         }
     }
+    [Header("Rewards")]
     public InGameCurrency currency;
     public List<InGameProductData> items;
 

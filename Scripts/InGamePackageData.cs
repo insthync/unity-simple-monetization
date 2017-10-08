@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class InGamePackageData : InGameProductData
 {
+    [Header("Rewards")]
     public List<InGameProductData> items;
 
     public override void Unlock()
