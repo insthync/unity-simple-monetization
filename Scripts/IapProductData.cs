@@ -32,9 +32,9 @@ public class IapProductData : BaseProductData
     {
         get
         {
-            if (IapManager.StoreController == null || IapManager.StoreController.products == null)
+            if (MonetizationManager.StoreController == null || MonetizationManager.StoreController.products == null)
                 return null;
-            return IapManager.StoreController.products.WithID(productId);
+            return MonetizationManager.StoreController.products.WithID(productId);
         }
     }
     public ProductMetadata Metadata
@@ -46,7 +46,7 @@ public class IapProductData : BaseProductData
             return ProductData.metadata;
         }
     }
-    public int currency;
+    public InGameCurrency currency;
     public List<InGameProductData> items;
 
     public override string GetId()
@@ -83,7 +83,7 @@ public class IapProductData : BaseProductData
 
     public override void Buy(System.Action<bool, string> callback)
     {
-        IapManager.PurchaseCallback = callback;
-        IapManager.Singleton.Purchase(productId);
+        MonetizationManager.PurchaseCallback = callback;
+        MonetizationManager.Singleton.Purchase(productId);
     }
 }

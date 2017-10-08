@@ -31,23 +31,34 @@ public class MonetizationSave
     public const string KeyCurrencyName = "SaveCurrency";
     public const string KeyPurchasedItemsName = "SavePurchasedItems";
 
-    public static int GetCurrency()
+    public static string GetCurrencyKey(string name)
     {
-        return PlayerPrefs.GetInt(KeyCurrencyName, IapManager.Singleton.startCurrency);
+        return KeyCurrencyName + "_" + name;
     }
 
-    public static void SetCurrency(int amount)
+    public static int GetCurrency(string name)
     {
-        PlayerPrefs.SetInt(KeyCurrencyName, amount);
+        if (!MonetizationManager.Currencies.ContainsKey(name))
+            return 0;
+        return PlayerPrefs.GetInt(GetCurrencyKey(name), MonetizationManager.Currencies[name].startAmount);
+    }
+
+    public static void SetCurrency(string name, int amount)
+    {
+        if (!MonetizationManager.Currencies.ContainsKey(name))
+            return;
+        PlayerPrefs.SetInt(GetCurrencyKey(name), amount);
         PlayerPrefs.Save();
     }
 
-    public static bool AddCurrency(int amount)
+    public static bool AddCurrency(string name, int amount)
     {
-        var newAmount = GetCurrency() + amount;
+        if (!MonetizationManager.Currencies.ContainsKey(name))
+            return false;
+        var newAmount = GetCurrency(name) + amount;
         if (newAmount < 0)
             return false;
-        SetCurrency(newAmount);
+        SetCurrency(name, newAmount);
         return true;
     }
 
