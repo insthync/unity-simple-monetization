@@ -66,6 +66,9 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
             var productCatalogItem = product.ProductCatalogItem;
             if (productCatalogItem == null)
                 continue;
+
+            var logMessage = "[" + TAG_INIT + "]: Adding product " + productCatalogItem.id + " type " + productCatalogItem.type.ToString();
+            Debug.Log(logMessage);
             if (productCatalogItem.allStoreIDs.Count > 0)
             {
                 var ids = new IDs();
@@ -250,6 +253,9 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         StoreController = controller;
         // Store specific subsystem, for accessing device-specific store features.
         StoreExtensionProvider = extensions;
+        var productCount = StoreController.products.all.Length;
+        var logMessage = "[" + TAG_INIT + "]: OnInitialized with " + productCount + " products";
+        Debug.Log(logMessage);
     }
 
 

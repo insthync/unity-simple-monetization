@@ -28,6 +28,7 @@ public class MonetizationSave
             return itemNames.Contains(itemName);
         }
     }
+    public const string Tag = "MonetizationSave";
     public const string KeyCurrencyName = "SaveCurrency";
     public const string KeyPurchasedItemsName = "SavePurchasedItems";
 
@@ -65,7 +66,7 @@ public class MonetizationSave
     public static PurchasedItems GetPurchasedItems()
     {
         var json = PlayerPrefs.GetString(KeyPurchasedItemsName, "{}");
-        Debug.Log("[Monetization] Loading Items From Json: " + json);
+        Debug.Log("["+ Tag + "] Loading Items From Json: " + json);
         var result = JsonUtility.FromJson<PurchasedItems>(json);
         if (result == null)
             result = new PurchasedItems();
@@ -75,7 +76,7 @@ public class MonetizationSave
     public static void SetPurchasedItems(PurchasedItems purchasedItems)
     {
         var json = JsonUtility.ToJson(purchasedItems);
-        Debug.Log("[Monetization] Saving Items To Json: " + json);
+        Debug.Log("["+ Tag + "] Saving Items To Json: " + json);
         PlayerPrefs.SetString(KeyPurchasedItemsName, json);
         PlayerPrefs.Save();
     }

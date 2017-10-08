@@ -7,25 +7,18 @@ public class IapProductData : BaseProductData
 {
     [HideInInspector]
     public string productId;
-
-    private ProductCatalogItem productCatalogItem = null;
+    
     public ProductCatalogItem ProductCatalogItem
     {
         get
         {
-            if (productCatalogItem == null)
+            var catalog = ProductCatalog.LoadDefaultCatalog();
+            foreach (var item in catalog.allProducts)
             {
-                var catalog = ProductCatalog.LoadDefaultCatalog();
-                foreach (var item in catalog.allProducts)
-                {
-                    if (item.id.Equals(productId))
-                    {
-                        productCatalogItem = item;
-                        break;
-                    }
-                }
+                if (item.id.Equals(productId))
+                    return item;
             }
-            return productCatalogItem;
+            return null;
         }
     }
     public Product ProductData
@@ -60,7 +53,7 @@ public class IapProductData : BaseProductData
         if (ProductCatalogItem == null)
             return "Unknow";
         var title = ProductCatalogItem.defaultDescription.Title;
-        if (Metadata != null)
+        if (Metadata != null && !string.IsNullOrEmpty(Metadata.localizedTitle))
             title = Metadata.localizedTitle;
         return title;
     }
@@ -70,7 +63,7 @@ public class IapProductData : BaseProductData
         if (ProductCatalogItem == null)
             return "";
         var description = ProductCatalogItem.defaultDescription.Description;
-        if (Metadata != null)
+        if (Metadata != null && !string.IsNullOrEmpty(Metadata.localizedDescription))
             description = Metadata.localizedDescription;
         return description;
     }
