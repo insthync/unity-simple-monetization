@@ -3,24 +3,27 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Purchasing;
 
-public class IapManager : MonoBehaviour, IStoreListener
+public class MonetizationManager : MonoBehaviour, IStoreListener
 {
     // NOTE: something about product type
     // -- Consumable product is product such as gold, gem that can be consumed
     // -- Non-Consumable product is product such as special characters/items
     // that player will buy it to unlock ability to use and will not buy it later
     // -- Subscription product is product such as weekly/monthly promotion
+    public const string PlacementRewardedVideo = "RewardedVideoPlacement";
     public const string TAG_INIT = "IAP_INIT";
     public const string TAG_PURCHASE = "IAP_PURCHASE";
     public const string TAG_RESTORE = "IAP_RESTORE";
-    public static IapManager Singleton { get; private set; }
+    public static MonetizationManager Singleton { get; private set; }
     public static IStoreController StoreController { get; private set; }
     public static IExtensionProvider StoreExtensionProvider { get; private set; }
     public static System.Action<bool, string> PurchaseCallback;
     public static System.Action<bool, string> RestoreCallback;
-    public int startCurrency = 0;
     public List<IapProductData> products;
-    public readonly Dictionary<string, IapProductData> Products = new Dictionary<string, IapProductData>();
+    public List<InGameCurrencySetting> currencies;
+    public InGameCurrency adsRewardCurrency;
+    public static readonly Dictionary<string, IapProductData> Products = new Dictionary<string, IapProductData>();
+    public static readonly Dictionary<string, InGameCurrencySetting> Currencies = new Dictionary<string, InGameCurrencySetting>();
     private void Awake()
     {
         if (Singleton != null)
@@ -31,6 +34,7 @@ public class IapManager : MonoBehaviour, IStoreListener
         Singleton = this;
         DontDestroyOnLoad(gameObject);
         InitializePurchasing();
+        InitializeCurrencies();
     }
 
     private void InitializePurchasing()
@@ -68,6 +72,94 @@ public class IapManager : MonoBehaviour, IStoreListener
         // Kick off the remainder of the set-up with an asynchrounous call, passing the configuration 
         // and this class' instance. Expect a response either in OnInitialized or OnInitializeFailed.
         UnityPurchasing.Initialize(this, builder);
+    }
+
+    private void InitializeCurrencies()
+    {
+        foreach (var currency in currencies)
+        {
+            Currencies[currency.id] = currency;
+        }
+    }
+
+#if UNITY_ADS
+    private static RemakeShowResult ConvertToRemakeShowResult(ShowResult result)
+    {
+        switch (result)
+        {
+            case ShowResult.Finished:
+                return RemakeShowResult.Finished;
+            case ShowResult.Skipped:
+                return RemakeShowResult.Skipped;
+            case ShowResult.Failed:
+                return RemakeShowResult.Failed;
+        }
+        return RemakeShowResult.Failed;
+    }
+
+    private static ShowResult ConvertToUnityShowResult(RemakeShowResult result)
+    {
+        switch (result)
+        {
+            case RemakeShowResult.Finished:
+                return ShowResult.Finished;
+            case RemakeShowResult.Skipped:
+                return ShowResult.Skipped;
+            case RemakeShowResult.Failed:
+                return ShowResult.Failed;
+        }
+        return ShowResult.Failed;
+    }
+#endif
+
+    public static void ShowAd(string placement, System.Action<RemakeShowResult> showResultHandler)
+    {
+#if UNITY_ADS
+        if (Advertisement.IsReady(placement))
+        {
+            var options = new ShowOptions
+            {
+                resultCallback = (result) =>
+                {
+                    if (showResultHandler != null)
+                        showResultHandler(ConvertToRemakeShowResult(result));
+                }
+            };
+            Advertisement.Show(placement, options);
+        }
+        else
+        {
+            if (showResultHandler != null)
+                showResultHandler(RemakeShowResult.NotReady);
+        }
+#else
+        if (showResultHandler != null)
+            showResultHandler(RemakeShowResult.NotReady);
+#endif
+    }
+
+    public static void ShowRewardedAd(System.Action<RemakeShowResult> showResultHandler)
+    {
+        ShowAd(PlacementRewardedVideo, (result) =>
+        {
+            if (result == RemakeShowResult.Finished)
+                MonetizationSave.AddCurrency(Singleton.adsRewardCurrency.id, Singleton.adsRewardCurrency.amount);
+            if (showResultHandler != null)
+                showResultHandler(result);
+        });
+    }
+
+    /// <summary>
+    /// This is remake of `ShowResult` enum.
+    /// Will uses when Unity's Ads not available for some platforms (such as standalone)
+    /// to avoid compile errors.
+    /// </summary>
+    public enum RemakeShowResult
+    {
+        Finished,
+        Skipped,
+        Failed,
+        NotReady,
     }
 
     public static bool IsInitialized()
@@ -171,7 +263,7 @@ public class IapManager : MonoBehaviour, IStoreListener
         IapProductData product = null;
         if (Products.TryGetValue(productId, out product))
         {
-            MonetizationSave.AddCurrency(product.currency);
+            MonetizationSave.AddCurrency(product.currency.id, product.currency.amount);
             foreach (var item in product.items)
             {
                 MonetizationSave.AddPurchasedItem(item.name);
