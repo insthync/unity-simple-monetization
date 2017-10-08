@@ -8,23 +8,22 @@ public class InGameProductData : BaseProductData
     [TextArea]
     public string description;
     public InGameCurrency price;
-    public bool isLock;
     public bool canBuyOnlyOnce;
-    public virtual bool IsUnlock()
+    public virtual bool IsBought()
     {
         var list = MonetizationSave.GetPurchasedItems();
-        return !isLock || list.Contains(name);
+        return list.Contains(name);
     }
 
     public virtual bool CanBuy()
     {
         var currency = MonetizationSave.GetCurrency(price.id);
         if (canBuyOnlyOnce)
-            return !IsUnlock() && currency >= price.amount;
+            return !IsBought() && currency >= price.amount;
         return currency >= price.amount;
     }
 
-    public virtual void Unlock()
+    public virtual void AddPurchasedItem()
     {
         MonetizationSave.AddPurchasedItem(name);
     }
@@ -63,7 +62,7 @@ public class InGameProductData : BaseProductData
             return;
         }
         MonetizationSave.AddCurrency(price.id, -price.amount);
-        Unlock();
+        AddPurchasedItem();
         if (callback != null)
             callback(true, string.Empty);
     }

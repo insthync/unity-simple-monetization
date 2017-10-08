@@ -7,12 +7,12 @@ public class InGamePackageData : InGameProductData
     [Header("Rewards")]
     public List<InGameProductData> items;
 
-    public override void Unlock()
+    public override void AddPurchasedItem()
     {
-        base.Unlock();
+        base.AddPurchasedItem();
         foreach (var item in items)
         {
-            item.Unlock();
+            item.AddPurchasedItem();
         }
     }
 }
