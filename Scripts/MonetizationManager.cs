@@ -45,8 +45,8 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         }
         Singleton = this;
         DontDestroyOnLoad(gameObject);
-        InitializePurchasing();
         InitializeCurrencies();
+        InitializePurchasing();
     }
 
     #region Initailize functions
@@ -87,7 +87,16 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
 
         // Kick off the remainder of the set-up with an asynchrounous call, passing the configuration 
         // and this class' instance. Expect a response either in OnInitialized or OnInitializeFailed.
-        UnityPurchasing.Initialize(this, builder);
+        try
+        {
+            UnityPurchasing.Initialize(this, builder);
+        }
+        catch (System.InvalidOperationException ex)
+        {
+            var errorMessage = "[" + TAG_INIT + "]: Cannot initialize purchasing, the platform may not supports.";
+            Debug.LogError(errorMessage);
+            Debug.LogException(ex);
+        }
     }
 
     private void InitializeCurrencies()
