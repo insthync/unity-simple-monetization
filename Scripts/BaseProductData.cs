@@ -4,7 +4,6 @@ using UnityEngine;
 
 public abstract class BaseProductData : ScriptableObject
 {
-    public string category;
     public Texture iconTexture;
     public Texture previewTexture;
     public abstract string GetId();
