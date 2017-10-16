@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Advertisements;
 using UnityEngine.Purchasing;
 
 public class MonetizationManager : MonoBehaviour, IStoreListener
@@ -22,7 +23,6 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
     // -- Non-Consumable product is product such as special characters/items
     // that player will buy it to unlock ability to use and will not buy it later
     // -- Subscription product is product such as weekly/monthly promotion
-    public const string PlacementRewardedVideo = "RewardedVideoPlacement";
     public const string TAG_INIT = "IAP_INIT";
     public const string TAG_PURCHASE = "IAP_PURCHASE";
     public const string TAG_RESTORE = "IAP_RESTORE";
@@ -31,8 +31,15 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
     public static IExtensionProvider StoreExtensionProvider { get; private set; }
     public static System.Action<bool, string> PurchaseCallback;
     public static System.Action<bool, string> RestoreCallback;
+    [Header("Unity monetize settings")]
+    public string androidGameId;
+    public string iosGameId;
+    public bool testMode;
+    [Header("In-game products")]
     public List<IapProductData> products;
     public List<InGameCurrencySetting> currencies;
+    [Header("Advertisement")]
+    public string rewardVideoPlacement = "rewardedVideo";
     public InGameCurrency adsRewardCurrency;
     public static readonly Dictionary<string, IapProductData> Products = new Dictionary<string, IapProductData>();
     public static readonly Dictionary<string, InGameCurrencySetting> Currencies = new Dictionary<string, InGameCurrencySetting>();
@@ -46,10 +53,20 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         Singleton = this;
         DontDestroyOnLoad(gameObject);
         InitializeCurrencies();
+        InitializeAds();
         InitializePurchasing();
     }
 
     #region Initailize functions
+    private void InitializeAds()
+    {
+#if UNITY_ANDROID
+        Advertisement.Initialize(androidGameId, testMode);
+#elif UNITY_IOS
+        Advertisement.Initialize(iosGameId, testMode);
+#endif
+    }
+
     private void InitializePurchasing()
     {
         // If we have already connected to Purchasing ...
@@ -115,7 +132,7 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
     #endregion
 
     #region ADS Actions
-#if UNITY_ADS
+#if UNITY_ANDROID || UNITY_IOS || UNITY_ADS
     private static RemakeShowResult ConvertToRemakeShowResult(ShowResult result)
     {
         switch (result)
@@ -147,7 +164,7 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
 
     public static void ShowAd(string placement, System.Action<RemakeShowResult> showResultHandler)
     {
-#if UNITY_ADS
+#if UNITY_ANDROID || UNITY_IOS || UNITY_ADS
         if (Advertisement.IsReady(placement))
         {
             var options = new ShowOptions
@@ -171,9 +188,18 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
 #endif
     }
 
+    public static bool IsAdsReady(string placement)
+    {
+#if UNITY_ANDROID || UNITY_IOS || UNITY_ADS
+        return Advertisement.IsReady(placement);
+#else
+        return false;
+#endif
+    }
+
     public static void ShowRewardedAd(System.Action<RemakeShowResult> showResultHandler)
     {
-        ShowAd(PlacementRewardedVideo, (result) =>
+        ShowAd(Singleton.rewardVideoPlacement, (result) =>
         {
             if (result == RemakeShowResult.Finished)
                 MonetizationSave.AddCurrency(Singleton.adsRewardCurrency.id, Singleton.adsRewardCurrency.amount);
