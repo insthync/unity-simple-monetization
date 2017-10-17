@@ -46,7 +46,15 @@ public class UIWatchAdsButton : MonoBehaviour
 
     private void OnClick()
     {
-        MonetizationManager.ShowAd(MonetizationManager.Singleton.rewardVideoPlacement, OnShowAdResult);
+        switch (buttonType)
+        {
+            case WatchAdsButtonType.RewardCurrency:
+                MonetizationManager.ShowRewardedAd(OnShowAdResult);
+                break;
+            default:
+                MonetizationManager.ShowAd(adsPlacement, OnShowAdResult);
+                break;
+        }
     }
 
     private void OnShowAdResult(MonetizationManager.RemakeShowResult result)
