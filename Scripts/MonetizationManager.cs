@@ -40,9 +40,10 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
     public List<InGameCurrencySetting> currencies;
     [Header("Advertisement")]
     public string rewardVideoPlacement = "rewardedVideo";
-    public InGameCurrency adsRewardCurrency;
+    public AdsReward[] adsRewards;
     public static readonly Dictionary<string, IapProductData> Products = new Dictionary<string, IapProductData>();
     public static readonly Dictionary<string, InGameCurrencySetting> Currencies = new Dictionary<string, InGameCurrencySetting>();
+    public static readonly Dictionary<AdsReward, int> AdsRewards = new Dictionary<AdsReward, int>();
     private void Awake()
     {
         if (Singleton != null)
@@ -55,6 +56,7 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         InitializeCurrencies();
         InitializeAds();
         InitializePurchasing();
+        InitializeAdsRewards();
     }
 
     #region Initailize functions
@@ -121,6 +123,14 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         foreach (var currency in currencies)
         {
             Currencies[currency.id] = currency;
+        }
+    }
+
+    private void InitializeAdsRewards()
+    {
+        foreach (var reward in adsRewards)
+        {
+            AdsRewards[reward] = reward.randomWeight;
         }
     }
 
@@ -202,7 +212,20 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         ShowAd(Singleton.rewardVideoPlacement, (result) =>
         {
             if (result == RemakeShowResult.Finished)
-                MonetizationSave.AddCurrency(Singleton.adsRewardCurrency.id, Singleton.adsRewardCurrency.amount);
+            {
+                var randomizer = WeightedRandomizer.From(AdsRewards);
+                var reward = randomizer.TakeOne();
+                var currencies = reward.currencies;
+                foreach (var currency in currencies)
+                {
+                    MonetizationSave.AddCurrency(currency.id, currency.amount);
+                }
+                var items = reward.items;
+                foreach (var item in items)
+                {
+                    MonetizationSave.AddPurchasedItem(item.name);
+                }
+            }
             if (showResultHandler != null)
                 showResultHandler(result);
         });
@@ -309,8 +332,13 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         IapProductData product = null;
         if (Products.TryGetValue(productId, out product))
         {
-            MonetizationSave.AddCurrency(product.currency.id, product.currency.amount);
-            foreach (var item in product.items)
+            var currencies = product.currencies;
+            foreach (var currency in currencies)
+            {
+                MonetizationSave.AddCurrency(currency.id, currency.amount);
+            }
+            var items = product.items;
+            foreach (var item in items)
             {
                 MonetizationSave.AddPurchasedItem(item.name);
             }

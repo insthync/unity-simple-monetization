@@ -40,8 +40,8 @@ public class IapProductData : BaseProductData
         }
     }
     [Header("Rewards")]
-    public InGameCurrency currency;
-    public List<InGameProductData> items;
+    public InGameCurrency[] currencies;
+    public InGameProductData[] items;
 
     public override string GetId()
     {
