@@ -11,13 +11,13 @@ public class InGameProductData : BaseProductData
     public bool canBuyOnlyOnce;
     public virtual bool IsBought()
     {
-        var list = MonetizationSave.GetPurchasedItems();
+        var list = MonetizationManager.Save.GetPurchasedItems();
         return list.Contains(name);
     }
 
     public virtual bool CanBuy()
     {
-        var currency = MonetizationSave.GetCurrency(price.id);
+        var currency = MonetizationManager.Save.GetCurrency(price.id);
         if (canBuyOnlyOnce)
             return !IsBought() && currency >= price.amount;
         return currency >= price.amount;
@@ -25,7 +25,7 @@ public class InGameProductData : BaseProductData
 
     public virtual void AddPurchasedItem()
     {
-        MonetizationSave.AddPurchasedItem(name);
+        MonetizationManager.Save.AddPurchasedItem(name);
     }
 
     public override string GetId()
@@ -61,7 +61,7 @@ public class InGameProductData : BaseProductData
                 callback(false, "Cannot buy item.");
             return;
         }
-        MonetizationSave.AddCurrency(price.id, -price.amount);
+        MonetizationManager.Save.AddCurrency(price.id, -price.amount);
         AddPurchasedItem();
         if (callback != null)
             callback(true, string.Empty);

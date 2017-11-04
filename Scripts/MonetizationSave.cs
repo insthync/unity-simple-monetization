@@ -2,32 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MonetizationSave
+public class PlayerPrefsMonetizationSave : BaseMonetizationSave
 {
-    [System.Serializable]
-    public class PurchasedItems
-    {
-        public List<string> itemNames = new List<string>();
-        public void Add(string itemName)
-        {
-            if (itemNames != null)
-                itemNames.Add(itemName);
-        }
-
-        public bool Remove(string itemName)
-        {
-            if (itemNames == null)
-                return false;
-            return itemNames.Remove(itemName);
-        }
-
-        public bool Contains(string itemName)
-        {
-            if (itemNames == null)
-                return false;
-            return itemNames.Contains(itemName);
-        }
-    }
     public const string Tag = "MonetizationSave";
     public const string KeyCurrencyName = "SaveCurrency";
     public const string KeyPurchasedItemsName = "SavePurchasedItems";
@@ -37,14 +13,14 @@ public class MonetizationSave
         return KeyCurrencyName + "_" + name;
     }
 
-    public static int GetCurrency(string name)
+    public override int GetCurrency(string name)
     {
         if (!MonetizationManager.Currencies.ContainsKey(name))
             return 0;
         return PlayerPrefs.GetInt(GetCurrencyKey(name), MonetizationManager.Currencies[name].startAmount);
     }
 
-    public static void SetCurrency(string name, int amount)
+    public override void SetCurrency(string name, int amount)
     {
         if (!MonetizationManager.Currencies.ContainsKey(name))
             return;
@@ -52,7 +28,7 @@ public class MonetizationSave
         PlayerPrefs.Save();
     }
 
-    public static bool AddCurrency(string name, int amount)
+    public override bool AddCurrency(string name, int amount)
     {
         if (!MonetizationManager.Currencies.ContainsKey(name))
             return false;
@@ -63,7 +39,7 @@ public class MonetizationSave
         return true;
     }
 
-    public static PurchasedItems GetPurchasedItems()
+    public override PurchasedItems GetPurchasedItems()
     {
         var json = PlayerPrefs.GetString(KeyPurchasedItemsName, "{}");
         Debug.Log("["+ Tag + "] Loading Items From Json: " + json);
@@ -73,7 +49,7 @@ public class MonetizationSave
         return result;
     }
 
-    public static void SetPurchasedItems(PurchasedItems purchasedItems)
+    public override void SetPurchasedItems(PurchasedItems purchasedItems)
     {
         var json = JsonUtility.ToJson(purchasedItems);
         Debug.Log("["+ Tag + "] Saving Items To Json: " + json);
@@ -81,7 +57,7 @@ public class MonetizationSave
         PlayerPrefs.Save();
     }
 
-    public static void AddPurchasedItem(string itemName)
+    public override void AddPurchasedItem(string itemName)
     {
         var list = GetPurchasedItems();
         if (!list.Contains(itemName))

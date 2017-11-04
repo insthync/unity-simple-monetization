@@ -13,7 +13,7 @@ public class UISavedInGameCurrency : MonoBehaviour {
 
     private void Update()
     {
-        var amount = MonetizationSave.GetCurrency(currencyId);
+        var amount = MonetizationManager.Save.GetCurrency(currencyId);
         uiInGameCurrency.currency.id = currencyId;
         uiInGameCurrency.currency.amount = amount;
     }

@@ -41,9 +41,26 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
     [Header("Advertisement")]
     public string rewardVideoPlacement = "rewardedVideo";
     public AdsReward[] adsRewards;
+    [Header("Save")]
+    public BaseMonetizationSave save;
     public static readonly Dictionary<string, IapProductData> Products = new Dictionary<string, IapProductData>();
     public static readonly Dictionary<string, InGameCurrencySetting> Currencies = new Dictionary<string, InGameCurrencySetting>();
     public static readonly Dictionary<AdsReward, int> AdsRewards = new Dictionary<AdsReward, int>();
+
+    public static BaseMonetizationSave Save
+    {
+        get
+        {
+            if (Singleton == null)
+                return null;
+
+            if (Singleton.save == null)
+                Singleton.save = Singleton.GetComponent<BaseMonetizationSave>();
+            if (Singleton.save == null)
+                Singleton.save = Singleton.gameObject.AddComponent<PlayerPrefsMonetizationSave>();
+            return Singleton.save;
+        }
+    }
     private void Awake()
     {
         if (Singleton != null)
@@ -218,12 +235,12 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
                 var currencies = reward.currencies;
                 foreach (var currency in currencies)
                 {
-                    MonetizationSave.AddCurrency(currency.id, currency.amount);
+                    Save.AddCurrency(currency.id, currency.amount);
                 }
                 var items = reward.items;
                 foreach (var item in items)
                 {
-                    MonetizationSave.AddPurchasedItem(item.name);
+                    Save.AddPurchasedItem(item.name);
                 }
             }
             if (showResultHandler != null)
@@ -335,12 +352,12 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
             var currencies = product.currencies;
             foreach (var currency in currencies)
             {
-                MonetizationSave.AddCurrency(currency.id, currency.amount);
+                Save.AddCurrency(currency.id, currency.amount);
             }
             var items = product.items;
             foreach (var item in items)
             {
-                MonetizationSave.AddPurchasedItem(item.name);
+                Save.AddPurchasedItem(item.name);
             }
         }
 
