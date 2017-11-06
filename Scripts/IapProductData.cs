@@ -75,6 +75,11 @@ public class IapProductData : BaseProductData
         return Metadata.localizedPriceString;
     }
 
+    public override bool CanBuy()
+    {
+        return true;
+    }
+
     public override void Buy(System.Action<bool, string> callback)
     {
         MonetizationManager.PurchaseCallback = callback;

@@ -11,6 +11,7 @@ public class UIProductData : MonoBehaviour
     public Text textPrice;
     public RawImage iconImage;
     public RawImage previewImage;
+    public Button buyButton;
     [Header("Product Data")]
     public BaseProductData productData;
     private BaseProductData dirtyProductData;
@@ -53,6 +54,13 @@ public class UIProductData : MonoBehaviour
             previewImage.texture = previewTexture;
     }
 
+    public void UpdateBuyButtonInteractable()
+    {
+        if (buyButton == null || productData == null)
+            return;
+        buyButton.interactable = productData.CanBuy();
+    }
+
     public void OnClickBuy()
     {
         if (productData != null)
@@ -65,5 +73,6 @@ public class UIProductData : MonoBehaviour
             list.onPurchaseSuccess.Invoke();
         else
             list.onPurchaseFail.Invoke(errorMessage);
+        list.UpdateBuyButtonsInteractable();
     }
 }

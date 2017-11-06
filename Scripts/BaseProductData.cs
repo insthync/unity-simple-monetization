@@ -10,5 +10,6 @@ public abstract class BaseProductData : ScriptableObject
     public abstract string GetTitle();
     public abstract string GetDescription();
     public abstract string GetPriceText();
+    public abstract bool CanBuy();
     public abstract void Buy(System.Action<bool, string> callback);
 }

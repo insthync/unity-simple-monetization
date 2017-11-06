@@ -15,14 +15,6 @@ public class InGameProductData : BaseProductData
         return list.Contains(name);
     }
 
-    public virtual bool CanBuy()
-    {
-        var currency = MonetizationManager.Save.GetCurrency(price.id);
-        if (canBuyOnlyOnce)
-            return !IsBought() && currency >= price.amount;
-        return currency >= price.amount;
-    }
-
     public virtual void AddPurchasedItem()
     {
         MonetizationManager.Save.AddPurchasedItem(name);
@@ -51,6 +43,14 @@ public class InGameProductData : BaseProductData
             return price.amount.ToString("N0") + currency.symbol;
         }
         return "N/A";
+    }
+
+    public override bool CanBuy()
+    {
+        var currency = MonetizationManager.Save.GetCurrency(price.id);
+        if (canBuyOnlyOnce)
+            return !IsBought() && currency >= price.amount;
+        return currency >= price.amount;
     }
 
     public override void Buy(System.Action<bool, string> callback)
