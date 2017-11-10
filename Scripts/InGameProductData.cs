@@ -12,12 +12,12 @@ public class InGameProductData : BaseProductData
     public virtual bool IsBought()
     {
         var list = MonetizationManager.Save.GetPurchasedItems();
-        return list.Contains(name);
+        return list.Contains(GetId());
     }
 
     public virtual void AddPurchasedItem()
     {
-        MonetizationManager.Save.AddPurchasedItem(name);
+        MonetizationManager.Save.AddPurchasedItem(GetId());
     }
 
     public override string GetId()
