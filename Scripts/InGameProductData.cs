@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "InGameProductData", menuName = "Monetization/In Game Product", order = 102)]
 public class InGameProductData : BaseProductData
 {
     public string title;

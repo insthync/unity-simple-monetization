@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.Purchasing;
 #endif
 
+[CreateAssetMenu(fileName = "IapProductData", menuName = "Monetization/IAP Product", order = 101)]
 public class IapProductData : BaseProductData
 {
     [HideInInspector]
