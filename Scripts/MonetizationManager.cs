@@ -1,10 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if ENABLE_ADVERTISEMENT_MONETIZATION
 using UnityEngine.Advertisements;
+#endif
+#if ENABLE_PURCHASING_MONETIZATION
 using UnityEngine.Purchasing;
+#endif
 
+#if ENABLE_PURCHASING_MONETIZATION
 public class MonetizationManager : MonoBehaviour, IStoreListener
+#else
+public class MonetizationManager : MonoBehaviour
+#endif
 {
     /// <summary>
     /// This is remake of `ShowResult` enum.
@@ -27,8 +35,10 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
     public const string TAG_PURCHASE = "IAP_PURCHASE";
     public const string TAG_RESTORE = "IAP_RESTORE";
     public static MonetizationManager Singleton { get; private set; }
+#if ENABLE_PURCHASING_MONETIZATION
     public static IStoreController StoreController { get; private set; }
     public static IExtensionProvider StoreExtensionProvider { get; private set; }
+#endif
     public static System.Action<bool, string> PurchaseCallback;
     public static System.Action<bool, string> RestoreCallback;
     [Header("Unity monetize settings")]
@@ -76,18 +86,19 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         InitializeAdsRewards();
     }
 
-    #region Initailize functions
+#region Initailize functions
     private void InitializeAds()
     {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && ENABLE_ADVERTISEMENT_MONETIZATION
         Advertisement.Initialize(androidGameId, testMode);
-#elif UNITY_IOS
+#elif UNITY_IOS && ENABLE_ADVERTISEMENT_MONETIZATION
         Advertisement.Initialize(iosGameId, testMode);
 #endif
     }
 
     private void InitializePurchasing()
     {
+#if ENABLE_PURCHASING_MONETIZATION
         // If we have already connected to Purchasing ...
         if (IsPurchasingInitialized())
             return;
@@ -133,6 +144,9 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
             Debug.LogError(errorMessage);
             Debug.LogException(ex);
         }
+#else
+        Debug.LogWarning("Cannot initialize purchasing, Please add scripting define symbols: ENABLE_PURCHASING_MONETIZATION to enable in-app puchasing system.");
+#endif
     }
 
     private void InitializeCurrencies()
@@ -153,13 +167,17 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
 
     public static bool IsPurchasingInitialized()
     {
+#if ENABLE_PURCHASING_MONETIZATION
         // Only say we are initialized if both the Purchasing references are set.
         return StoreController != null && StoreExtensionProvider != null;
+#else
+        return true;
+#endif
     }
     #endregion
 
     #region ADS Actions
-#if UNITY_ANDROID || UNITY_IOS || UNITY_ADS
+#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_ADVERTISEMENT_MONETIZATION
     private static RemakeShowResult ConvertToRemakeShowResult(ShowResult result)
     {
         switch (result)
@@ -191,7 +209,7 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
 
     public static void ShowAd(string placement, System.Action<RemakeShowResult> showResultHandler)
     {
-#if UNITY_ANDROID || UNITY_IOS || UNITY_ADS
+#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_ADVERTISEMENT_MONETIZATION
         if (Advertisement.IsReady(placement))
         {
             var options = new ShowOptions
@@ -217,7 +235,7 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
 
     public static bool IsAdsReady(string placement)
     {
-#if UNITY_ANDROID || UNITY_IOS || UNITY_ADS
+#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_ADVERTISEMENT_MONETIZATION
         return Advertisement.IsReady(placement);
 #else
         return false;
@@ -247,11 +265,12 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
                 showResultHandler(result);
         });
     }
-    #endregion
+#endregion
 
-    #region IAP Actions
+#region IAP Actions
     public void Purchase(string productId)
     {
+#if ENABLE_PURCHASING_MONETIZATION
         // If Purchasing has not yet been set up ...
         if (!IsPurchasingInitialized())
         {
@@ -272,12 +291,16 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
             var errorMessage = "[" + TAG_PURCHASE + "]: FAIL. Not purchasing product, either is not found or is not available for purchase.";
             RestoreResult(false, errorMessage);
         }
+#else
+        Debug.LogWarning("Cannot purchase product, Please add scripting define symbols: ENABLE_PURCHASING_MONETIZATION to enable in-app puchasing system.");
+#endif
     }
 
     // Restore purchases previously made by this customer. Some platforms automatically restore purchases, like Google. 
     // Apple currently requires explicit purchase restoration for IAP, conditionally displaying a password prompt.
     public void RestorePurchases()
     {
+#if ENABLE_PURCHASING_MONETIZATION
         // If Purchasing has not yet been set up ...
         if (!IsPurchasingInitialized())
         {
@@ -311,6 +334,9 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
             var errorMessage = "[" + TAG_RESTORE + "]: FAIL. Platform: " + Application.platform.ToString() + " is not a supported platform for the Codeless IAP restore button";
             RestoreResult(false, errorMessage);
         }
+#else
+        Debug.LogWarning("Cannot restore product, Please add scripting define symbols: ENABLE_PURCHASING_MONETIZATION to enable in-app puchasing system.");
+#endif
     }
 
     private void OnTransactionsRestored(bool success)
@@ -318,9 +344,10 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         var errorMessage = success ? "" : "";
         RestoreResult(success, errorMessage);
     }
-    #endregion
+#endregion
 
-    #region IStoreListener
+#region IStoreListener
+#if ENABLE_PURCHASING_MONETIZATION
     public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
     {
         // Purchasing has succeeded initializing. Collect our Purchasing references.
@@ -375,9 +402,10 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
         var errorMessage = "[" + TAG_PURCHASE + "]: FAIL. Product: " + product.definition.storeSpecificId + ", PurchaseFailureReason: " + failureReason;
         PurchaseResult(false, errorMessage);
     }
-    #endregion
+#endif
+#endregion
 
-    #region Callback Events
+#region Callback Events
     private static void PurchaseResult(bool success, string errorMessage = "")
     {
         if (!success)
@@ -399,5 +427,5 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
             RestoreCallback = null;
         }
     }
-    #endregion
+#endregion
 }
