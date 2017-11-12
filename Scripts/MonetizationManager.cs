@@ -93,12 +93,14 @@ public class MonetizationManager : MonoBehaviour
         Advertisement.Initialize(androidGameId, testMode);
 #elif UNITY_IOS && ENABLE_ADVERTISEMENT_MONETIZATION
         Advertisement.Initialize(iosGameId, testMode);
+#else
+        Debug.LogWarning("Cannot initialize advertisement, Please add scripting define symbols: ENABLE_ADVERTISEMENT_MONETIZATION to enable advertisement system.");
 #endif
     }
 
     private void InitializePurchasing()
     {
-#if ENABLE_PURCHASING_MONETIZATION
+#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_PURCHASING_MONETIZATION
         // If we have already connected to Purchasing ...
         if (IsPurchasingInitialized())
             return;
@@ -228,6 +230,7 @@ public class MonetizationManager : MonoBehaviour
                 showResultHandler(RemakeShowResult.NotReady);
         }
 #else
+        Debug.LogWarning("Cannot show advertisement, Please add scripting define symbols: ENABLE_ADVERTISEMENT_MONETIZATION to enable advertisement system.");
         if (showResultHandler != null)
             showResultHandler(RemakeShowResult.NotReady);
 #endif
@@ -270,7 +273,7 @@ public class MonetizationManager : MonoBehaviour
 #region IAP Actions
     public void Purchase(string productId)
     {
-#if ENABLE_PURCHASING_MONETIZATION
+#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_PURCHASING_MONETIZATION
         // If Purchasing has not yet been set up ...
         if (!IsPurchasingInitialized())
         {
@@ -300,7 +303,7 @@ public class MonetizationManager : MonoBehaviour
     // Apple currently requires explicit purchase restoration for IAP, conditionally displaying a password prompt.
     public void RestorePurchases()
     {
-#if ENABLE_PURCHASING_MONETIZATION
+#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_PURCHASING_MONETIZATION
         // If Purchasing has not yet been set up ...
         if (!IsPurchasingInitialized())
         {
