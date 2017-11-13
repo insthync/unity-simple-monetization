@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-#if ENABLE_PURCHASING_MONETIZATION
+#if UNITY_PURCHASING
 using UnityEngine.Purchasing;
 #endif
 
@@ -11,7 +11,7 @@ public class IapProductData : BaseProductData
     [HideInInspector]
     public string productId;
 
-#if ENABLE_PURCHASING_MONETIZATION
+#if UNITY_PURCHASING
     public ProductCatalogItem ProductCatalogItem
     {
         get
@@ -56,7 +56,7 @@ public class IapProductData : BaseProductData
 
     public override string GetTitle()
     {
-#if ENABLE_PURCHASING_MONETIZATION
+#if UNITY_PURCHASING
         if (ProductCatalogItem == null)
             return "Unknow";
         var title = ProductCatalogItem.defaultDescription.Title;
@@ -64,14 +64,14 @@ public class IapProductData : BaseProductData
             title = Metadata.localizedTitle;
         return title;
 #else
-        Debug.LogWarning("No title, Please add scripting define symbols: ENABLE_PURCHASING_MONETIZATION to enable in-app puchasing system.");
+        Debug.LogWarning("Cannot get IAP product title, Unity Purchasing is not enabled.");
         return "Unknow";
 #endif
     }
 
     public override string GetDescription()
     {
-#if ENABLE_PURCHASING_MONETIZATION
+#if UNITY_PURCHASING
         if (ProductCatalogItem == null)
             return "";
         var description = ProductCatalogItem.defaultDescription.Description;
@@ -79,19 +79,19 @@ public class IapProductData : BaseProductData
             description = Metadata.localizedDescription;
         return description;
 #else
-        Debug.LogWarning("No description, Please add scripting define symbols: ENABLE_PURCHASING_MONETIZATION to enable in-app puchasing system.");
+        Debug.LogWarning("Cannot get IAP product description, Unity Purchasing is not enabled.");
         return "";
 #endif
     }
 
     public override string GetPriceText()
     {
-#if ENABLE_PURCHASING_MONETIZATION
+#if UNITY_PURCHASING
         if (ProductCatalogItem == null || Metadata == null)
             return "N/A";
         return Metadata.localizedPriceString;
 #else
-        Debug.LogWarning("No price, Please add scripting define symbols: ENABLE_PURCHASING_MONETIZATION to enable in-app puchasing system.");
+        Debug.LogWarning("Cannot get IAP product price, Unity Purchasing is not enabled.");
         return "N/A";
 #endif
     }

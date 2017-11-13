@@ -1,14 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-#if ENABLE_ADVERTISEMENT_MONETIZATION
+#if UNITY_ADS
 using UnityEngine.Advertisements;
 #endif
-#if ENABLE_PURCHASING_MONETIZATION
+#if UNITY_PURCHASING
 using UnityEngine.Purchasing;
 #endif
 
-#if ENABLE_PURCHASING_MONETIZATION
+#if UNITY_PURCHASING
 public class MonetizationManager : MonoBehaviour, IStoreListener
 #else
 public class MonetizationManager : MonoBehaviour
@@ -35,7 +35,7 @@ public class MonetizationManager : MonoBehaviour
     public const string TAG_PURCHASE = "IAP_PURCHASE";
     public const string TAG_RESTORE = "IAP_RESTORE";
     public static MonetizationManager Singleton { get; private set; }
-#if ENABLE_PURCHASING_MONETIZATION
+#if UNITY_PURCHASING
     public static IStoreController StoreController { get; private set; }
     public static IExtensionProvider StoreExtensionProvider { get; private set; }
 #endif
@@ -89,18 +89,18 @@ public class MonetizationManager : MonoBehaviour
 #region Initailize functions
     private void InitializeAds()
     {
-#if UNITY_ANDROID && ENABLE_ADVERTISEMENT_MONETIZATION
+#if UNITY_ANDROID && UNITY_ADS
         Advertisement.Initialize(androidGameId, testMode);
-#elif UNITY_IOS && ENABLE_ADVERTISEMENT_MONETIZATION
+#elif UNITY_IOS && UNITY_ADS
         Advertisement.Initialize(iosGameId, testMode);
 #else
-        Debug.LogWarning("Cannot initialize advertisement, Please add scripting define symbols: ENABLE_ADVERTISEMENT_MONETIZATION to enable advertisement system.");
+        Debug.LogWarning("Cannot initialize advertisement, Unity Ads is not enabled or not supported platforms.");
 #endif
     }
 
     private void InitializePurchasing()
     {
-#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_PURCHASING_MONETIZATION
+#if (UNITY_ANDROID || UNITY_IOS) && UNITY_PURCHASING
         // If we have already connected to Purchasing ...
         if (IsPurchasingInitialized())
             return;
@@ -147,7 +147,7 @@ public class MonetizationManager : MonoBehaviour
             Debug.LogException(ex);
         }
 #else
-        Debug.LogWarning("Cannot initialize purchasing, Please add scripting define symbols: ENABLE_PURCHASING_MONETIZATION to enable in-app puchasing system.");
+        Debug.LogWarning("Cannot initialize purchasing, Unity Purchasing is not enabled or not supported platforms.");
 #endif
     }
 
@@ -169,17 +169,17 @@ public class MonetizationManager : MonoBehaviour
 
     public static bool IsPurchasingInitialized()
     {
-#if ENABLE_PURCHASING_MONETIZATION
+#if UNITY_PURCHASING
         // Only say we are initialized if both the Purchasing references are set.
         return StoreController != null && StoreExtensionProvider != null;
 #else
-        return true;
+        return false;
 #endif
     }
     #endregion
 
     #region ADS Actions
-#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_ADVERTISEMENT_MONETIZATION
+#if UNITY_ADS
     private static RemakeShowResult ConvertToRemakeShowResult(ShowResult result)
     {
         switch (result)
@@ -211,7 +211,7 @@ public class MonetizationManager : MonoBehaviour
 
     public static void ShowAd(string placement, System.Action<RemakeShowResult> showResultHandler)
     {
-#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_ADVERTISEMENT_MONETIZATION
+#if UNITY_ADS
         if (Advertisement.IsReady(placement))
         {
             var options = new ShowOptions
@@ -230,7 +230,7 @@ public class MonetizationManager : MonoBehaviour
                 showResultHandler(RemakeShowResult.NotReady);
         }
 #else
-        Debug.LogWarning("Cannot show advertisement, Please add scripting define symbols: ENABLE_ADVERTISEMENT_MONETIZATION to enable advertisement system.");
+        Debug.LogWarning("Cannot show advertisement, Unity Ads is not enabled");
         if (showResultHandler != null)
             showResultHandler(RemakeShowResult.NotReady);
 #endif
@@ -238,7 +238,7 @@ public class MonetizationManager : MonoBehaviour
 
     public static bool IsAdsReady(string placement)
     {
-#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_ADVERTISEMENT_MONETIZATION
+#if UNITY_ADS
         return Advertisement.IsReady(placement);
 #else
         return false;
@@ -273,7 +273,7 @@ public class MonetizationManager : MonoBehaviour
 #region IAP Actions
     public void Purchase(string productId)
     {
-#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_PURCHASING_MONETIZATION
+#if (UNITY_ANDROID || UNITY_IOS) && UNITY_PURCHASING
         // If Purchasing has not yet been set up ...
         if (!IsPurchasingInitialized())
         {
@@ -295,7 +295,7 @@ public class MonetizationManager : MonoBehaviour
             RestoreResult(false, errorMessage);
         }
 #else
-        Debug.LogWarning("Cannot purchase product, Please add scripting define symbols: ENABLE_PURCHASING_MONETIZATION to enable in-app puchasing system.");
+        Debug.LogWarning("Cannot purchase product, Unity Purchasing is not enabled.");
 #endif
     }
 
@@ -303,7 +303,7 @@ public class MonetizationManager : MonoBehaviour
     // Apple currently requires explicit purchase restoration for IAP, conditionally displaying a password prompt.
     public void RestorePurchases()
     {
-#if (UNITY_ANDROID || UNITY_IOS) && ENABLE_PURCHASING_MONETIZATION
+#if (UNITY_ANDROID || UNITY_IOS) && UNITY_PURCHASING
         // If Purchasing has not yet been set up ...
         if (!IsPurchasingInitialized())
         {
@@ -338,7 +338,7 @@ public class MonetizationManager : MonoBehaviour
             RestoreResult(false, errorMessage);
         }
 #else
-        Debug.LogWarning("Cannot restore product, Please add scripting define symbols: ENABLE_PURCHASING_MONETIZATION to enable in-app puchasing system.");
+        Debug.LogWarning("Cannot restore product, Unity Purchasing is not enabled.");
 #endif
     }
 
@@ -347,10 +347,10 @@ public class MonetizationManager : MonoBehaviour
         var errorMessage = success ? "" : "";
         RestoreResult(success, errorMessage);
     }
-#endregion
+    #endregion
 
-#region IStoreListener
-#if ENABLE_PURCHASING_MONETIZATION
+    #region IStoreListener
+#if UNITY_PURCHASING
     public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
     {
         // Purchasing has succeeded initializing. Collect our Purchasing references.
