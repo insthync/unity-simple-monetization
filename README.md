@@ -2,13 +2,11 @@
 
 ## Enable purchasing monetization
 
-You have to add `ENABLE_PURCHASING_MONETIZATION` in **Scripting Define Symbols** (From Build Settings... / Player Settings...)
-And also enable Unity Purchasing as following steps via link https://docs.unity3d.com/Manual/UnityIAPSettingUp.html
+You have to enable Unity Purchasing as following steps via link https://docs.unity3d.com/Manual/UnityIAPSettingUp.html
 
 ## Enable advertisement monetization
 
-You have to add `ENABLE_ADVERTISEMENT_MONETIZATION` in **Scripting Define Symbols** (From Build Settings... / Player Settings...)
-And also enable Unity Advertisements as following steps via link https://unity3d.com/services/ads/quick-start-guide
+You have to enable Unity Advertisements as following steps via link https://unity3d.com/services/ads/quick-start-guide
 
 ## How to use
 
