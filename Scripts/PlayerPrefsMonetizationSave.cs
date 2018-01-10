@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerPrefsMonetizationSave : BaseMonetizationSave
 {
-    public const string Tag = "MonetizationSave";
+    public const string Tag = "PlayerPrefsMonetizationSave";
     public const string KeyCurrencyName = "SaveCurrency";
     public const string KeyPurchasedItemsName = "SavePurchasedItems";
 
