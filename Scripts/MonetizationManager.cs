@@ -1,14 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-#if UNITY_ADS
+#if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Advertisements;
 #endif
-#if UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Purchasing;
 #endif
 
-#if UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
 public class MonetizationManager : MonoBehaviour, IStoreListener
 #else
 public class MonetizationManager : MonoBehaviour
@@ -35,7 +35,7 @@ public class MonetizationManager : MonoBehaviour
     public const string TAG_PURCHASE = "IAP_PURCHASE";
     public const string TAG_RESTORE = "IAP_RESTORE";
     public static MonetizationManager Singleton { get; private set; }
-#if UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     public static IStoreController StoreController { get; private set; }
     public static IExtensionProvider StoreExtensionProvider { get; private set; }
 #endif
@@ -100,7 +100,7 @@ public class MonetizationManager : MonoBehaviour
 
     private void InitializePurchasing()
     {
-#if (UNITY_ANDROID || UNITY_IOS) && UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_ANDROID || UNITY_IOS)
         // If we have already connected to Purchasing ...
         if (IsPurchasingInitialized())
             return;
@@ -169,7 +169,7 @@ public class MonetizationManager : MonoBehaviour
 
     public static bool IsPurchasingInitialized()
     {
-#if UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         // Only say we are initialized if both the Purchasing references are set.
         return StoreController != null && StoreExtensionProvider != null;
 #else
@@ -179,7 +179,7 @@ public class MonetizationManager : MonoBehaviour
     #endregion
 
     #region ADS Actions
-#if UNITY_ADS
+#if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
     private static RemakeShowResult ConvertToRemakeShowResult(ShowResult result)
     {
         switch (result)
@@ -211,7 +211,7 @@ public class MonetizationManager : MonoBehaviour
 
     public static void ShowAd(string placement, System.Action<RemakeShowResult> showResultHandler)
     {
-#if UNITY_ADS
+#if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
         if (Advertisement.IsReady(placement))
         {
             var options = new ShowOptions
@@ -238,7 +238,7 @@ public class MonetizationManager : MonoBehaviour
 
     public static bool IsAdsReady(string placement)
     {
-#if UNITY_ADS
+#if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
         return Advertisement.IsReady(placement);
 #else
         return false;
@@ -273,7 +273,7 @@ public class MonetizationManager : MonoBehaviour
 #region IAP Actions
     public void Purchase(string productId)
     {
-#if (UNITY_ANDROID || UNITY_IOS) && UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         // If Purchasing has not yet been set up ...
         if (!IsPurchasingInitialized())
         {
@@ -303,7 +303,7 @@ public class MonetizationManager : MonoBehaviour
     // Apple currently requires explicit purchase restoration for IAP, conditionally displaying a password prompt.
     public void RestorePurchases()
     {
-#if (UNITY_ANDROID || UNITY_IOS) && UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         // If Purchasing has not yet been set up ...
         if (!IsPurchasingInitialized())
         {
@@ -350,7 +350,7 @@ public class MonetizationManager : MonoBehaviour
     #endregion
 
     #region IStoreListener
-#if UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
     {
         // Purchasing has succeeded initializing. Collect our Purchasing references.
@@ -406,9 +406,9 @@ public class MonetizationManager : MonoBehaviour
         PurchaseResult(false, errorMessage);
     }
 #endif
-#endregion
+    #endregion
 
-#region Callback Events
+    #region Callback Events
     private static void PurchaseResult(bool success, string errorMessage = "")
     {
         if (!success)
