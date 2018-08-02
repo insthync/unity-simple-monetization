@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-#if UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Purchasing;
 #endif
 
@@ -11,7 +11,7 @@ public class IapProductData : BaseProductData
     [HideInInspector]
     public string productId;
 
-#if UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     public ProductCatalogItem ProductCatalogItem
     {
         get
@@ -56,7 +56,7 @@ public class IapProductData : BaseProductData
 
     public override string GetTitle()
     {
-#if UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         if (ProductCatalogItem == null)
             return "Unknow";
         var title = ProductCatalogItem.defaultDescription.Title;
@@ -71,7 +71,7 @@ public class IapProductData : BaseProductData
 
     public override string GetDescription()
     {
-#if UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         if (ProductCatalogItem == null)
             return "";
         var description = ProductCatalogItem.defaultDescription.Description;
@@ -86,7 +86,7 @@ public class IapProductData : BaseProductData
 
     public override string GetPriceText()
     {
-#if UNITY_PURCHASING
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         if (ProductCatalogItem == null || Metadata == null)
             return "N/A";
         return Metadata.localizedPriceString;
