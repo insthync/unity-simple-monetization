@@ -9,7 +9,27 @@ public class InGameProductData : BaseProductData
     [TextArea]
     public string description;
     public InGameCurrency price;
+    public InGameCurrency[] alternativePrices;
     public bool canBuyOnlyOnce;
+
+    private Dictionary<string, int> cacheAlternativePrices;
+    public Dictionary<string, int> AlternativePrices
+    {
+        get
+        {
+            if (cacheAlternativePrices != null)
+            {
+                cacheAlternativePrices = new Dictionary<string, int>();
+                cacheAlternativePrices[price.id] = price.amount;
+                foreach (var alternativePrice in alternativePrices)
+                {
+                    cacheAlternativePrices[alternativePrice.id] = alternativePrice.amount;
+                }
+            }
+            return cacheAlternativePrices;
+        }
+    }
+
     public virtual bool IsBought()
     {
         var list = MonetizationManager.Save.GetPurchasedItems();
@@ -46,9 +66,31 @@ public class InGameProductData : BaseProductData
         return "N/A";
     }
 
+    public string GetPriceText(string currencyId)
+    {
+        int priceAmount;
+        if (AlternativePrices.TryGetValue(currencyId, out priceAmount) && 
+            MonetizationManager.Currencies.ContainsKey(currencyId))
+        {
+            var currency = MonetizationManager.Currencies[currencyId];
+            return priceAmount.ToString("N0") + currency.symbol;
+        }
+        return "N/A";
+    }
+
     public override bool CanBuy()
     {
         var currency = MonetizationManager.Save.GetCurrency(price.id);
+        if (canBuyOnlyOnce)
+            return !IsBought() && currency >= price.amount;
+        return currency >= price.amount;
+    }
+
+    public bool CanBuy(string currencyId)
+    {
+        var currency = 0;
+        if (AlternativePrices.ContainsKey(currencyId))
+            currency = MonetizationManager.Save.GetCurrency(currencyId);
         if (canBuyOnlyOnce)
             return !IsBought() && currency >= price.amount;
         return currency >= price.amount;
@@ -63,6 +105,20 @@ public class InGameProductData : BaseProductData
             return;
         }
         MonetizationManager.Save.AddCurrency(price.id, -price.amount);
+        AddPurchasedItem();
+        if (callback != null)
+            callback(true, string.Empty);
+    }
+
+    public void Buy(string currencyId, System.Action<bool, string> callback)
+    {
+        if (!CanBuy(currencyId))
+        {
+            if (callback != null)
+                callback(false, "Cannot buy item.");
+            return;
+        }
+        MonetizationManager.Save.AddCurrency(currencyId, -AlternativePrices[currencyId]);
         AddPurchasedItem();
         if (callback != null)
             callback(true, string.Empty);

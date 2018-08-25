@@ -27,7 +27,7 @@ public class UIProductData : MonoBehaviour
         }
     }
 
-    public void UpdateData()
+    public virtual void UpdateData()
     {
         var title = "";
         var description = "";
@@ -54,20 +54,20 @@ public class UIProductData : MonoBehaviour
             previewImage.texture = previewTexture;
     }
 
-    public void UpdateBuyButtonInteractable()
+    public virtual void UpdateBuyButtonInteractable()
     {
         if (buyButton == null || productData == null)
             return;
         buyButton.interactable = productData.CanBuy();
     }
 
-    public void OnClickBuy()
+    public virtual void OnClickBuy()
     {
         if (productData != null)
             productData.Buy(BuyResult);
     }
 
-    private void BuyResult(bool success, string errorMessage)
+    protected void BuyResult(bool success, string errorMessage)
     {
         if (success)
             list.onPurchaseSuccess.Invoke();
