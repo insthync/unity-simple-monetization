@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 public class UIInGameProductData : UIProductData
 {
-    [Header("Alternative Price UIs")]
-    public AlternativePriceUI[] priceUIs;
+    [Header("Price UIs")]
+    public PriceUI[] priceUIs;
 
     public override void UpdateData()
     {
@@ -52,7 +52,7 @@ public class UIInGameProductData : UIProductData
     }
 }
 
-public struct AlternativePriceUI
+public struct PriceUI
 {
     public string currencyId;
     public Text textPrice;
