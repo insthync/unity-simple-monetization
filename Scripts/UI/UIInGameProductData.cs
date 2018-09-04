@@ -52,6 +52,7 @@ public class UIInGameProductData : UIProductData
     }
 }
 
+[System.Serializable]
 public struct PriceUI
 {
     public string currencyId;
