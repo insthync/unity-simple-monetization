@@ -50,6 +50,16 @@ public class UIInGameProductData : UIProductData
         if (productData != null)
             productData.Buy(BuyResult);
     }
+
+    public void OnClickBuy(string currencyId)
+    {
+        var inGameProductData = productData as InGameProductData;
+        if (inGameProductData == null)
+            return;
+
+        if (productData != null)
+            inGameProductData.Buy(currencyId, BuyResult);
+    }
 }
 
 [System.Serializable]
