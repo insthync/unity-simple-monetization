@@ -94,7 +94,7 @@ public class InGameProductData : BaseProductData
                 foreach (var price in Prices)
                 {
                     var currentAmount = MonetizationManager.Save.GetCurrency(price.Key);
-                    if (price.Value >= currentAmount)
+                    if (currentAmount >= price.Value)
                     {
                         canBuy = true;
                         break;
@@ -106,7 +106,7 @@ public class InGameProductData : BaseProductData
                 foreach (var price in Prices)
                 {
                     var currentAmount = MonetizationManager.Save.GetCurrency(price.Key);
-                    if (price.Value < currentAmount)
+                    if (currentAmount < price.Value)
                     {
                         canBuy = false;
                         break;
@@ -139,7 +139,26 @@ public class InGameProductData : BaseProductData
                 callback(false, "Cannot buy item.");
             return;
         }
-        MonetizationManager.Save.AddCurrency(price.id, -price.amount);
+        switch (pricesOption)
+        {
+            case PricesOption.Alternative:
+                foreach (var price in Prices)
+                {
+                    var currentAmount = MonetizationManager.Save.GetCurrency(price.Key);
+                    if (currentAmount >= price.Value)
+                    {
+                        MonetizationManager.Save.AddCurrency(price.Key, -price.Value);
+                        break;
+                    }
+                }
+                break;
+            case PricesOption.Requisite:
+                foreach (var price in Prices)
+                {
+                    MonetizationManager.Save.AddCurrency(price.Key, -price.Value);
+                }
+                break;
+        }
         AddPurchasedItem();
         if (callback != null)
             callback(true, string.Empty);
