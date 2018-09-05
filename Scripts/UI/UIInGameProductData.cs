@@ -30,6 +30,8 @@ public class UIInGameProductData : UIProductData
 
     public override void UpdateBuyButtonInteractable()
     {
+        base.UpdateBuyButtonInteractable();
+
         if (productData == null)
             return;
 
