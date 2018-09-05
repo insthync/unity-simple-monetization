@@ -23,7 +23,7 @@ public class InGameProductData : BaseProductData
     {
         get
         {
-            if (cachePrices != null)
+            if (cachePrices == null)
             {
                 cachePrices = new Dictionary<string, int>();
                 cachePrices[price.id] = price.amount;
