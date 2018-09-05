@@ -15,7 +15,6 @@ public class UIProductData : MonoBehaviour
     [Header("Product Data")]
     public BaseProductData productData;
     private BaseProductData dirtyProductData;
-    [HideInInspector]
     public UIProductList list;
 
     private void Update()
