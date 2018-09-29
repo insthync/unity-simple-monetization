@@ -86,7 +86,7 @@ public class MonetizationManager : MonoBehaviour
         InitializeAdsRewards();
     }
 
-#region Initailize functions
+    #region Initailize functions
     private void InitializeAds()
     {
 #if UNITY_ANDROID && UNITY_ADS
@@ -268,9 +268,9 @@ public class MonetizationManager : MonoBehaviour
                 showResultHandler(result);
         });
     }
-#endregion
+    #endregion
 
-#region IAP Actions
+    #region IAP Actions
     public void Purchase(string productId)
     {
 #if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
@@ -430,5 +430,5 @@ public class MonetizationManager : MonoBehaviour
             RestoreCallback = null;
         }
     }
-#endregion
+    #endregion
 }
