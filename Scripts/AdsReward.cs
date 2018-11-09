@@ -1,9 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-[System.Serializable]
-public class AdsReward
+﻿[System.Serializable]
+public struct AdsReward
 {
     public InGameCurrency[] currencies;
     public InGameProductData[] items;
