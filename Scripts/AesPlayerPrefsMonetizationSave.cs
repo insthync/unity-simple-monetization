@@ -94,4 +94,12 @@ public class AesPlayerPrefsMonetizationSave : BaseMonetizationSave
             list.Add(itemName);
         SetPurchasedItems(list);
     }
+
+    public override void RemovePurchasedItem(string itemName)
+    {
+        var list = GetPurchasedItems();
+        if (list.Contains(itemName))
+            list.Remove(itemName);
+        SetPurchasedItems(list);
+    }
 }

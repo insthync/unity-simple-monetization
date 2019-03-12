@@ -35,4 +35,5 @@ public abstract class BaseMonetizationSave : MonoBehaviour
     public abstract PurchasedItems GetPurchasedItems();
     public abstract void SetPurchasedItems(PurchasedItems purchasedItems);
     public abstract void AddPurchasedItem(string itemName);
+    public abstract void RemovePurchasedItem(string itemName);
 }

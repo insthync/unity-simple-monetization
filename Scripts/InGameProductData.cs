@@ -47,6 +47,11 @@ public class InGameProductData : BaseProductData
         MonetizationManager.Save.AddPurchasedItem(GetId());
     }
 
+    public virtual void RemovePurchasedItem()
+    {
+        MonetizationManager.Save.RemovePurchasedItem(GetId());
+    }
+
     public override string GetId()
     {
         return name;
