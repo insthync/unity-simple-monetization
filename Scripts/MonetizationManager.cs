@@ -42,8 +42,8 @@ public class MonetizationManager : MonoBehaviour
 #endif
     public static System.Action<bool, string> PurchaseCallback;
     public static System.Action<bool, string> RestoreCallback;
-    public static System.Action<AdsReward> overrideSaveAdsReward = null;
-    public static ProcessPurchaseCallback overrideProcessPurchase = null;
+    public static System.Action<AdsReward> OverrideSaveAdsReward = null;
+    public static ProcessPurchaseCallback OverrideProcessPurchase = null;
     [Header("Unity monetize settings")]
     public string androidGameId;
     public string iosGameId;
@@ -256,10 +256,10 @@ public class MonetizationManager : MonoBehaviour
             {
                 var randomizer = WeightedRandomizer.From(AdsRewards);
                 var reward = randomizer.TakeOne();
-                if (overrideSaveAdsReward != null)
+                if (OverrideSaveAdsReward != null)
                 {
                     // Custom save ads reward function
-                    overrideSaveAdsReward.Invoke(reward);
+                    OverrideSaveAdsReward.Invoke(reward);
                 }
                 else
                 {
@@ -386,10 +386,10 @@ public class MonetizationManager : MonoBehaviour
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
     {
-        if (overrideProcessPurchase != null)
+        if (OverrideProcessPurchase != null)
         {
             // custom process purchase function
-            return overrideProcessPurchase.Invoke(args);
+            return OverrideProcessPurchase.Invoke(args);
         }
 
         // default process purchase function

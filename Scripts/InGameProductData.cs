@@ -5,8 +5,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "InGameProductData", menuName = "Monetization/In Game Product", order = 102)]
 public class InGameProductData : BaseProductData
 {
-    public static System.Action<InGameProductData, System.Action<bool, string>> overrideBuyFunction = null;
-    public static System.Action<InGameProductData, string, System.Action<bool, string>> overrideBuyWithCurrencyIdFunction = null;
+    public static System.Action<InGameProductData, System.Action<bool, string>> OverrideBuyFunction = null;
+    public static System.Action<InGameProductData, string, System.Action<bool, string>> OverrideBuyWithCurrencyIdFunction = null;
 
     public enum PricesOption
     {
@@ -29,10 +29,12 @@ public class InGameProductData : BaseProductData
             if (cachePrices == null)
             {
                 cachePrices = new Dictionary<string, int>();
-                cachePrices[price.id] = price.amount;
+                if (!string.IsNullOrEmpty(price.id))
+                    cachePrices[price.id] = price.amount;
                 foreach (var price in prices)
                 {
-                    cachePrices[price.id] = price.amount;
+                    if (!string.IsNullOrEmpty(price.id))
+                        cachePrices[price.id] = price.amount;
                 }
             }
             return cachePrices;
@@ -141,9 +143,9 @@ public class InGameProductData : BaseProductData
 
     public override void Buy(System.Action<bool, string> callback)
     {
-        if (overrideBuyFunction != null)
+        if (OverrideBuyFunction != null)
         {
-            overrideBuyFunction.Invoke(this, callback);
+            OverrideBuyFunction.Invoke(this, callback);
             return;
         }
 
@@ -182,9 +184,9 @@ public class InGameProductData : BaseProductData
 
     public void Buy(string currencyId, System.Action<bool, string> callback)
     {
-        if (overrideBuyWithCurrencyIdFunction != null)
+        if (OverrideBuyWithCurrencyIdFunction != null)
         {
-            overrideBuyWithCurrencyIdFunction.Invoke(this, currencyId, callback);
+            OverrideBuyWithCurrencyIdFunction.Invoke(this, currencyId, callback);
             return;
         }
 
