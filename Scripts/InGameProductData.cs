@@ -5,6 +5,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "InGameProductData", menuName = "Monetization/In Game Product", order = 102)]
 public class InGameProductData : BaseProductData
 {
+    public static System.Action<InGameProductData, System.Action<bool, string>> overrideBuyFunction = null;
+    public static System.Action<InGameProductData, string, System.Action<bool, string>> overrideBuyWithCurrencyIdFunction = null;
+
     public enum PricesOption
     {
         Alternative,
@@ -138,12 +141,19 @@ public class InGameProductData : BaseProductData
 
     public override void Buy(System.Action<bool, string> callback)
     {
+        if (overrideBuyFunction != null)
+        {
+            overrideBuyFunction.Invoke(this, callback);
+            return;
+        }
+
         if (!CanBuy())
         {
             if (callback != null)
-                callback(false, "Cannot buy item.");
+                callback.Invoke(false, "Cannot buy item.");
             return;
         }
+
         switch (pricesOption)
         {
             case PricesOption.Alternative:
@@ -164,27 +174,36 @@ public class InGameProductData : BaseProductData
                 }
                 break;
         }
+
         AddPurchasedItem();
         if (callback != null)
-            callback(true, string.Empty);
+            callback.Invoke(true, string.Empty);
     }
 
     public void Buy(string currencyId, System.Action<bool, string> callback)
     {
+        if (overrideBuyWithCurrencyIdFunction != null)
+        {
+            overrideBuyWithCurrencyIdFunction.Invoke(this, currencyId, callback);
+            return;
+        }
+
         if (pricesOption == PricesOption.Requisite)
         {
             Buy(callback);
             return;
         }
+
         if (!CanBuy(currencyId))
         {
             if (callback != null)
-                callback(false, "Cannot buy item.");
+                callback.Invoke(false, "Cannot buy item.");
             return;
         }
+
         MonetizationManager.Save.AddCurrency(currencyId, -Prices[currencyId]);
         AddPurchasedItem();
         if (callback != null)
-            callback(true, string.Empty);
+            callback.Invoke(true, string.Empty);
     }
 }
