@@ -14,6 +14,7 @@ public class MonetizationManager : MonoBehaviour, IStoreListener
 public class MonetizationManager : MonoBehaviour
 #endif
 {
+    public delegate PurchaseProcessingResult ProcessPurchaseCallback(PurchaseEventArgs args);
     /// <summary>
     /// This is remake of `ShowResult` enum.
     /// Will uses when Unity's Ads not available for some platforms (such as standalone)
@@ -41,6 +42,8 @@ public class MonetizationManager : MonoBehaviour
 #endif
     public static System.Action<bool, string> PurchaseCallback;
     public static System.Action<bool, string> RestoreCallback;
+    public static System.Action<AdsReward> overrideSaveAdsReward = null;
+    public static ProcessPurchaseCallback overrideProcessPurchaseCallback = null;
     [Header("Unity monetize settings")]
     public string androidGameId;
     public string iosGameId;
@@ -253,15 +256,24 @@ public class MonetizationManager : MonoBehaviour
             {
                 var randomizer = WeightedRandomizer.From(AdsRewards);
                 var reward = randomizer.TakeOne();
-                var currencies = reward.currencies;
-                foreach (var currency in currencies)
+                if (overrideSaveAdsReward != null)
                 {
-                    Save.AddCurrency(currency.id, currency.amount);
+                    // Custom save ads reward function
+                    overrideSaveAdsReward.Invoke(reward);
                 }
-                var items = reward.items;
-                foreach (var item in items)
+                else
                 {
-                    Save.AddPurchasedItem(item.name);
+                    // Default save ads reward function
+                    var currencies = reward.currencies;
+                    foreach (var currency in currencies)
+                    {
+                        Save.AddCurrency(currency.id, currency.amount);
+                    }
+                    var items = reward.items;
+                    foreach (var item in items)
+                    {
+                        Save.AddPurchasedItem(item.name);
+                    }
                 }
             }
             if (showResultHandler != null)
@@ -374,8 +386,14 @@ public class MonetizationManager : MonoBehaviour
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
     {
-        var productId = args.purchasedProduct.definition.id;
+        if (overrideProcessPurchaseCallback != null)
+        {
+            // custom process purchase function
+            return overrideProcessPurchaseCallback.Invoke(args);
+        }
 
+        // default process purchase function
+        var productId = args.purchasedProduct.definition.id;
         IapProductData product = null;
         if (Products.TryGetValue(productId, out product))
         {
@@ -409,7 +427,7 @@ public class MonetizationManager : MonoBehaviour
     #endregion
 
     #region Callback Events
-    private static void PurchaseResult(bool success, string errorMessage = "")
+    public static void PurchaseResult(bool success, string errorMessage = "")
     {
         if (!success)
             Debug.LogError(errorMessage);
@@ -420,7 +438,7 @@ public class MonetizationManager : MonoBehaviour
         }
     }
 
-    private static void RestoreResult(bool success, string errorMessage = "")
+    public static void RestoreResult(bool success, string errorMessage = "")
     {
         if (!success)
             Debug.LogError(errorMessage);
