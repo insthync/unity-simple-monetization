@@ -36,9 +36,9 @@ public class UIProductList : MonoBehaviour
 
     public void UpdateBuyButtonsInteractable()
     {
-        foreach (var ui in UIs)
+        foreach (var ui in UIs.Values)
         {
-            ui.Value.UpdateBuyButtonInteractable();
+            ui.UpdateBuyButtonInteractable();
         }
     }
 
@@ -99,5 +99,10 @@ public class UIProductList : MonoBehaviour
                 return true;
         }
         return false;
+    }
+
+    public List<UIProductData> GetUIs()
+    {
+        return new List<UIProductData>(UIs.Values);
     }
 }

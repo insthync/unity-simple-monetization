@@ -6,6 +6,7 @@ public abstract class BaseProductData : ScriptableObject
 {
     public Texture iconTexture;
     public Texture previewTexture;
+    public string category;
     public abstract string GetId();
     public abstract string GetTitle();
     public abstract string GetDescription();
