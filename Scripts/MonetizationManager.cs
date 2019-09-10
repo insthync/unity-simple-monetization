@@ -8,8 +8,12 @@ using UnityEngine.Advertisements;
 using UnityEngine.Purchasing;
 #endif
 
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#if UNITY_PURCHASING && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+public class MonetizationManager : MonoBehaviour, IStoreListener, IUnityAdsListener
+#elif UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
 public class MonetizationManager : MonoBehaviour, IStoreListener
+#elif UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+public class MonetizationManager : MonoBehaviour, IUnityAdsListener
 #else
 public class MonetizationManager : MonoBehaviour
 #endif
@@ -59,6 +63,7 @@ public class MonetizationManager : MonoBehaviour
     public static readonly Dictionary<string, IapProductData> Products = new Dictionary<string, IapProductData>();
     public static readonly Dictionary<string, InGameCurrencySetting> Currencies = new Dictionary<string, InGameCurrencySetting>();
     public static readonly Dictionary<AdsReward, int> AdsRewards = new Dictionary<AdsReward, int>();
+    public static readonly Dictionary<string, System.Action<RemakeShowResult>> ShowResultCallbacks = new Dictionary<string, System.Action<RemakeShowResult>>();
 
     public static BaseMonetizationSave Save
     {
@@ -94,8 +99,10 @@ public class MonetizationManager : MonoBehaviour
     {
 #if UNITY_ANDROID && UNITY_ADS
         Advertisement.Initialize(androidGameId, testMode);
+        Advertisement.AddListener(this);
 #elif UNITY_IOS && UNITY_ADS
         Advertisement.Initialize(iosGameId, testMode);
+        Advertisement.AddListener(this);
 #else
         Debug.LogWarning("Cannot initialize advertisement, Unity Ads is not enabled or not supported platforms.");
 #endif
@@ -217,25 +224,18 @@ public class MonetizationManager : MonoBehaviour
 #if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
         if (Advertisement.IsReady(placement))
         {
-            var options = new ShowOptions
-            {
-                resultCallback = (result) =>
-                {
-                    if (showResultHandler != null)
-                        showResultHandler(ConvertToRemakeShowResult(result));
-                }
-            };
-            Advertisement.Show(placement, options);
+            ShowResultCallbacks[placement] = showResultHandler;
+            Advertisement.Show(placement);
         }
         else
         {
             if (showResultHandler != null)
-                showResultHandler(RemakeShowResult.NotReady);
+                showResultHandler.Invoke(RemakeShowResult.NotReady);
         }
 #else
         Debug.LogWarning("Cannot show advertisement, Unity Ads is not enabled");
         if (showResultHandler != null)
-            showResultHandler(RemakeShowResult.NotReady);
+            showResultHandler.Invoke(RemakeShowResult.NotReady);
 #endif
     }
 
@@ -277,7 +277,7 @@ public class MonetizationManager : MonoBehaviour
                 }
             }
             if (showResultHandler != null)
-                showResultHandler(result);
+                showResultHandler.Invoke(result);
         });
     }
     #endregion
@@ -448,5 +448,33 @@ public class MonetizationManager : MonoBehaviour
             RestoreCallback = null;
         }
     }
+    #endregion
+    
+    #region IUnityAdsListener
+#if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+
+    public void OnUnityAdsReady(string placementId)
+    {
+        // TODO: May do something
+    }
+
+    public void OnUnityAdsDidError(string message)
+    {
+        // TODO: May do something
+    }
+
+    public void OnUnityAdsDidStart(string placementId)
+    {
+        // TODO: May do something
+    }
+
+    public void OnUnityAdsDidFinish(string placementId, ShowResult showResult)
+    {
+        System.Action<RemakeShowResult> showResultHandler;
+        if (ShowResultCallbacks.TryGetValue(placementId, out showResultHandler) && 
+            showResultHandler != null)
+            showResultHandler.Invoke(ConvertToRemakeShowResult(showResult));
+    }
+#endif
     #endregion
 }
