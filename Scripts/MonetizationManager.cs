@@ -18,7 +18,9 @@ public class MonetizationManager : MonoBehaviour, IUnityAdsListener
 public class MonetizationManager : MonoBehaviour
 #endif
 {
+#if UNITY_PURCHASING && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
     public delegate PurchaseProcessingResult ProcessPurchaseCallback(PurchaseEventArgs args);
+#endif
     /// <summary>
     /// This is remake of `ShowResult` enum.
     /// Will uses when Unity's Ads not available for some platforms (such as standalone)
@@ -47,7 +49,9 @@ public class MonetizationManager : MonoBehaviour
     public static System.Action<bool, string> PurchaseCallback;
     public static System.Action<bool, string> RestoreCallback;
     public static System.Action<AdsReward> OverrideSaveAdsReward = null;
+#if UNITY_PURCHASING && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
     public static ProcessPurchaseCallback OverrideProcessPurchase = null;
+#endif
     [Header("Unity monetize settings")]
     public string androidGameId;
     public string iosGameId;
@@ -94,7 +98,7 @@ public class MonetizationManager : MonoBehaviour
         InitializeAdsRewards();
     }
 
-    #region Initailize functions
+#region Initailize functions
     private void InitializeAds()
     {
 #if UNITY_ANDROID && UNITY_ADS
@@ -186,9 +190,9 @@ public class MonetizationManager : MonoBehaviour
         return false;
 #endif
     }
-    #endregion
+#endregion
 
-    #region ADS Actions
+#region ADS Actions
 #if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
     private static RemakeShowResult ConvertToRemakeShowResult(ShowResult result)
     {
@@ -280,9 +284,9 @@ public class MonetizationManager : MonoBehaviour
                 showResultHandler.Invoke(result);
         });
     }
-    #endregion
+#endregion
 
-    #region IAP Actions
+#region IAP Actions
     public void Purchase(string productId)
     {
 #if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
@@ -359,9 +363,9 @@ public class MonetizationManager : MonoBehaviour
         var errorMessage = success ? "" : "";
         RestoreResult(success, errorMessage);
     }
-    #endregion
+#endregion
 
-    #region IStoreListener
+#region IStoreListener
 #if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
     {
@@ -424,9 +428,9 @@ public class MonetizationManager : MonoBehaviour
         PurchaseResult(false, errorMessage);
     }
 #endif
-    #endregion
+#endregion
 
-    #region Callback Events
+#region Callback Events
     public static void PurchaseResult(bool success, string errorMessage = "")
     {
         if (!success)
@@ -448,9 +452,9 @@ public class MonetizationManager : MonoBehaviour
             RestoreCallback = null;
         }
     }
-    #endregion
+#endregion
     
-    #region IUnityAdsListener
+#region IUnityAdsListener
 #if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
 
     public void OnUnityAdsReady(string placementId)
@@ -476,5 +480,5 @@ public class MonetizationManager : MonoBehaviour
             showResultHandler.Invoke(ConvertToRemakeShowResult(showResult));
     }
 #endif
-    #endregion
+#endregion
 }
