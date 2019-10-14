@@ -18,7 +18,7 @@ public class MonetizationManager : MonoBehaviour, IUnityAdsListener
 public class MonetizationManager : MonoBehaviour
 #endif
 {
-#if UNITY_PURCHASING && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     public delegate PurchaseProcessingResult ProcessPurchaseCallback(PurchaseEventArgs args);
 #endif
     /// <summary>
@@ -49,7 +49,7 @@ public class MonetizationManager : MonoBehaviour
     public static System.Action<bool, string> PurchaseCallback;
     public static System.Action<bool, string> RestoreCallback;
     public static System.Action<AdsReward> OverrideSaveAdsReward = null;
-#if UNITY_PURCHASING && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     public static ProcessPurchaseCallback OverrideProcessPurchase = null;
 #endif
     [Header("Unity monetize settings")]
