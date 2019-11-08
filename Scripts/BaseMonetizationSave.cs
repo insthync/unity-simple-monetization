@@ -7,7 +7,7 @@ public abstract class BaseMonetizationSave : MonoBehaviour
     [System.Serializable]
     public class PurchasedItems
     {
-        public readonly List<string> itemNames = new List<string>();
+        public List<string> itemNames = new List<string>();
         public void Add(string itemName)
         {
             if (itemNames != null)
