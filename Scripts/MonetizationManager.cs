@@ -23,6 +23,9 @@ public class MonetizationManager : MonoBehaviour
     public delegate PurchaseProcessingResult ProcessPurchaseCallback(PurchaseEventArgs args);
 #endif
     [System.Serializable]
+    public class StringEvent : UnityEvent<string> { }
+
+    [System.Serializable]
     public struct ShowAdOverrideAction
     {
         [Tooltip("Ads placement that you want to override action")]
@@ -31,8 +34,7 @@ public class MonetizationManager : MonoBehaviour
         public int weight;
         [Tooltip("If this is `TRUE` it will not invoke the `action`. It will show ads by default show ads function")]
         public bool useDefaultShowAdsFunction;
-        [Tooltip("Override action")]
-        public UnityEvent action;
+        public StringEvent action;
     }
 
     /// <summary>
@@ -205,11 +207,11 @@ public class MonetizationManager : MonoBehaviour
         return false;
 #endif
     }
-#endregion
+    #endregion
 
-#region ADS Actions
+    #region ADS Actions
 #if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
-    private static RemakeShowResult ConvertToRemakeShowResult(ShowResult result)
+    public static RemakeShowResult ConvertToRemakeShowResult(ShowResult result)
     {
         switch (result)
         {
@@ -223,7 +225,7 @@ public class MonetizationManager : MonoBehaviour
         return RemakeShowResult.Failed;
     }
 
-    private static ShowResult ConvertToUnityShowResult(RemakeShowResult result)
+    public static ShowResult ConvertToUnityShowResult(RemakeShowResult result)
     {
         switch (result)
         {
@@ -240,6 +242,7 @@ public class MonetizationManager : MonoBehaviour
 
     public static void ShowAd(string placement, System.Action<RemakeShowResult> showResultHandler)
     {
+        ShowResultCallbacks[placement] = showResultHandler;
         if (Singleton.adsOverrideActions != null && Singleton.adsOverrideActions.Count > 0)
         {
             Dictionary<ShowAdOverrideAction, int> randomActions = new Dictionary<ShowAdOverrideAction, int>();
@@ -254,7 +257,7 @@ public class MonetizationManager : MonoBehaviour
                 var action = randomizer.TakeOne();
                 if (!action.useDefaultShowAdsFunction)
                 {
-                    action.action.Invoke();
+                    action.action.Invoke(placement);
                     return;
                 }
             }
@@ -262,7 +265,6 @@ public class MonetizationManager : MonoBehaviour
 #if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
         if (Advertisement.IsReady(placement))
         {
-            ShowResultCallbacks[placement] = showResultHandler;
             Advertisement.Show(placement);
         }
         else
