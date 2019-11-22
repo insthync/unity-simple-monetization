@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 #if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Advertisements;
 #endif
@@ -21,6 +22,19 @@ public class MonetizationManager : MonoBehaviour
 #if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     public delegate PurchaseProcessingResult ProcessPurchaseCallback(PurchaseEventArgs args);
 #endif
+    [System.Serializable]
+    public struct ShowAdOverrideAction
+    {
+        [Tooltip("Ads placement that you want to override action")]
+        public string placement;
+        [Tooltip("Random weight to invoke the `action`")]
+        public int weight;
+        [Tooltip("If this is `TRUE` it will not invoke the `action`. It will show ads by default show ads function")]
+        public bool useDefaultShowAdsFunction;
+        [Tooltip("Override action")]
+        public UnityEvent action;
+    }
+
     /// <summary>
     /// This is remake of `ShowResult` enum.
     /// Will uses when Unity's Ads not available for some platforms (such as standalone)
@@ -56,6 +70,7 @@ public class MonetizationManager : MonoBehaviour
     public string androidGameId;
     public string iosGameId;
     public bool testMode;
+    public List<ShowAdOverrideAction> adsOverrideActions;
     [Header("In-game products")]
     public List<IapProductData> products;
     public List<InGameCurrencySetting> currencies;
@@ -225,6 +240,25 @@ public class MonetizationManager : MonoBehaviour
 
     public static void ShowAd(string placement, System.Action<RemakeShowResult> showResultHandler)
     {
+        if (Singleton.adsOverrideActions != null && Singleton.adsOverrideActions.Count > 0)
+        {
+            Dictionary<ShowAdOverrideAction, int> randomActions = new Dictionary<ShowAdOverrideAction, int>();
+            foreach (var overrideAction in Singleton.adsOverrideActions)
+            {
+                if (overrideAction.placement.Equals(placement))
+                    randomActions[overrideAction] = overrideAction.weight;
+            }
+            if (randomActions.Count > 0)
+            {
+                var randomizer = WeightedRandomizer.From(randomActions);
+                var action = randomizer.TakeOne();
+                if (!action.useDefaultShowAdsFunction)
+                {
+                    action.action.Invoke();
+                    return;
+                }
+            }
+        }
 #if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
         if (Advertisement.IsReady(placement))
         {
