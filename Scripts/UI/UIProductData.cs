@@ -24,6 +24,7 @@ public class UIProductData : MonoBehaviour
             UpdateData();
             dirtyProductData = productData;
         }
+        UpdateBuyButtonInteractable();
     }
 
     public virtual void UpdateData()
@@ -72,6 +73,5 @@ public class UIProductData : MonoBehaviour
             list.onPurchaseSuccess.Invoke();
         else
             list.onPurchaseFail.Invoke(errorMessage);
-        list.UpdateBuyButtonsInteractable();
     }
 }

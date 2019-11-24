@@ -34,14 +34,6 @@ public class UIProductList : MonoBehaviour
         }
     }
 
-    public void UpdateBuyButtonsInteractable()
-    {
-        foreach (var ui in UIs.Values)
-        {
-            ui.UpdateBuyButtonInteractable();
-        }
-    }
-
     public void AddProduct(BaseProductData productData)
     {
         if (productData == null || UIs.ContainsKey(productData.GetId()))
@@ -62,7 +54,6 @@ public class UIProductList : MonoBehaviour
             return;
         }
         ui.list = this;
-        ui.UpdateBuyButtonInteractable();
         UIs[ui.productData.GetId()] = ui;
     }
 
