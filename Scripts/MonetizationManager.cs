@@ -32,8 +32,6 @@ public class MonetizationManager : MonoBehaviour
         public string placement;
         [Tooltip("Random weight to invoke the `action`")]
         public int weight;
-        [Tooltip("If this is `TRUE` it will not invoke the `action`. It will show ads by default show ads function")]
-        public bool useDefaultShowAdsFunction;
         public StringEvent action;
     }
 
@@ -254,28 +252,28 @@ public class MonetizationManager : MonoBehaviour
             if (randomActions.Count > 0)
             {
                 var randomizer = WeightedRandomizer.From(randomActions);
-                var action = randomizer.TakeOne();
-                if (!action.useDefaultShowAdsFunction)
-                {
-                    action.action.Invoke(placement);
-                    return;
-                }
+                randomizer.TakeOne().action.Invoke(placement);
+                return;
             }
         }
+        Singleton.DefaultShowAdFunction(placement);
+    }
+
+    public void DefaultShowAdFunction(string placement)
+    {
 #if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
         if (Advertisement.IsReady(placement))
         {
+            // Show ads when ready
             Advertisement.Show(placement);
         }
         else
         {
-            if (showResultHandler != null)
+            System.Action<RemakeShowResult> showResultHandler;
+            if (ShowResultCallbacks.TryGetValue(placement, out showResultHandler) && 
+                showResultHandler != null)
                 showResultHandler.Invoke(RemakeShowResult.NotReady);
         }
-#else
-        Debug.LogWarning("Cannot show advertisement, Unity Ads is not enabled");
-        if (showResultHandler != null)
-            showResultHandler.Invoke(RemakeShowResult.NotReady);
 #endif
     }
 
@@ -304,21 +302,26 @@ public class MonetizationManager : MonoBehaviour
                 else
                 {
                     // Default save ads reward function
-                    var currencies = reward.currencies;
-                    foreach (var currency in currencies)
-                    {
-                        Save.AddCurrency(currency.id, currency.amount);
-                    }
-                    var items = reward.items;
-                    foreach (var item in items)
-                    {
-                        Save.AddPurchasedItem(item.name);
-                    }
+                    DefaultSaveAdsReward(reward);
                 }
             }
             if (showResultHandler != null)
                 showResultHandler.Invoke(result);
         });
+    }
+
+    public static void DefaultSaveAdsReward(AdsReward reward)
+    {
+        var currencies = reward.currencies;
+        foreach (var currency in currencies)
+        {
+            Save.AddCurrency(currency.id, currency.amount);
+        }
+        var items = reward.items;
+        foreach (var item in items)
+        {
+            Save.AddPurchasedItem(item.name);
+        }
     }
 #endregion
 
