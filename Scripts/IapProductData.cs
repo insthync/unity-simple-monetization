@@ -61,7 +61,11 @@ public class IapProductData : BaseProductData
             return "Unknow";
         var title = ProductCatalogItem.defaultDescription.Title;
         if (Metadata != null && !string.IsNullOrEmpty(Metadata.localizedTitle))
+        {
             title = Metadata.localizedTitle;
+            // Try replace product name (for Android)
+            title = title.Replace("(" + Application.productName + ")", "");
+        }
         return title;
 #else
         Debug.LogWarning("Cannot get IAP product title, Unity Purchasing is not enabled.");
