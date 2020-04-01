@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 #if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Advertisements;
+using System.Text.RegularExpressions;
 #endif
 #if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Purchasing;
@@ -333,8 +334,9 @@ public class MonetizationManager : MonoBehaviour
         if (!IsPurchasingInitialized())
         {
             // ... report the situation and stop restoring. Consider either waiting longer, or retrying initialization.
-            var errorMessage = "[" + TAG_PURCHASE + "]: FAIL. Not initialized.";
-            PurchaseResult(false, errorMessage);
+            PurchaseResult(false,
+                "Cannot purchase, the IAP system not initialized yet.",
+                "[" + TAG_PURCHASE + "]: FAIL. Not initialized.");
             return;
         }
 
@@ -463,17 +465,18 @@ public class MonetizationManager : MonoBehaviour
     {
         // A product purchase attempt did not succeed. Check failureReason for more detail. Consider sharing 
         // this reason with the user to guide their troubleshooting actions.
-        var errorMessage = "[" + TAG_PURCHASE + "]: FAIL. Product: " + product.definition.storeSpecificId + ", PurchaseFailureReason: " + failureReason;
-        PurchaseResult(false, errorMessage);
+        PurchaseResult(false,
+            Regex.Replace(failureReason.ToString(), "(?!^)([A-Z])", " $1"),
+            "[" + TAG_PURCHASE + "]: FAIL. Product: " + product.definition.storeSpecificId + ", PurchaseFailureReason: " + failureReason);
     }
 #endif
 #endregion
 
 #region Callback Events
-    public static void PurchaseResult(bool success, string errorMessage = "")
+    public static void PurchaseResult(bool success, string errorMessage = "", string errorLog = "")
     {
         if (!success)
-            Debug.LogError(errorMessage);
+            Debug.LogError(errorLog);
         if (PurchaseCallback != null)
         {
             PurchaseCallback(success, errorMessage);
