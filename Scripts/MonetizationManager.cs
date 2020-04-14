@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Text.RegularExpressions;
 #if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Advertisements;
-using System.Text.RegularExpressions;
 #endif
 #if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Purchasing;
