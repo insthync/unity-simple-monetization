@@ -3,24 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Text.RegularExpressions;
-#if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_ADS && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Advertisements;
 #endif
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Purchasing;
 #endif
 
-#if UNITY_PURCHASING && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_IAP && !NO_ADS && UNITY_PURCHASING && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
 public class MonetizationManager : MonoBehaviour, IStoreListener, IUnityAdsListener
-#elif UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#elif !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
 public class MonetizationManager : MonoBehaviour, IStoreListener
-#elif UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+#elif !NO_ADS && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
 public class MonetizationManager : MonoBehaviour, IUnityAdsListener
 #else
 public class MonetizationManager : MonoBehaviour
 #endif
 {
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     public delegate PurchaseProcessingResult ProcessPurchaseCallback(PurchaseEventArgs args);
 #endif
     [System.Serializable]
@@ -57,14 +57,14 @@ public class MonetizationManager : MonoBehaviour
     public const string TAG_PURCHASE = "IAP_PURCHASE";
     public const string TAG_RESTORE = "IAP_RESTORE";
     public static MonetizationManager Singleton { get; private set; }
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     public static IStoreController StoreController { get; private set; }
     public static IExtensionProvider StoreExtensionProvider { get; private set; }
 #endif
     public static System.Action<bool, string> PurchaseCallback;
     public static System.Action<bool, string> RestoreCallback;
     public static System.Action<AdsReward> OverrideSaveAdsReward = null;
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     public static ProcessPurchaseCallback OverrideProcessPurchase = null;
 #endif
     [Header("Unity monetize settings")]
@@ -117,10 +117,10 @@ public class MonetizationManager : MonoBehaviour
 #region Initailize functions
     private void InitializeAds()
     {
-#if UNITY_ANDROID && UNITY_ADS
+#if !NO_ADS && UNITY_ADS && UNITY_ANDROID
         Advertisement.Initialize(androidGameId, testMode);
         Advertisement.AddListener(this);
-#elif UNITY_IOS && UNITY_ADS
+#elif !NO_ADS && UNITY_ADS && UNITY_IOS
         Advertisement.Initialize(iosGameId, testMode);
         Advertisement.AddListener(this);
 #else
@@ -130,7 +130,7 @@ public class MonetizationManager : MonoBehaviour
 
     private void InitializePurchasing()
     {
-#if UNITY_PURCHASING && (UNITY_ANDROID || UNITY_IOS)
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_ANDROID || UNITY_IOS)
         // If we have already connected to Purchasing ...
         if (IsPurchasingInitialized())
             return;
@@ -199,7 +199,7 @@ public class MonetizationManager : MonoBehaviour
 
     public static bool IsPurchasingInitialized()
     {
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         // Only say we are initialized if both the Purchasing references are set.
         return StoreController != null && StoreExtensionProvider != null;
 #else
@@ -209,7 +209,7 @@ public class MonetizationManager : MonoBehaviour
     #endregion
 
     #region ADS Actions
-#if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_ADS && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
     public static RemakeShowResult ConvertToRemakeShowResult(ShowResult result)
     {
         switch (result)
@@ -262,7 +262,7 @@ public class MonetizationManager : MonoBehaviour
 
     public void DefaultShowAdFunction(string placement)
     {
-#if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_ADS && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
         if (Advertisement.IsReady(placement))
         {
             // Show ads when ready
@@ -280,7 +280,7 @@ public class MonetizationManager : MonoBehaviour
 
     public static bool IsAdsReady(string placement)
     {
-#if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_ADS && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
         return Advertisement.IsReady(placement);
 #else
         return false;
@@ -329,7 +329,7 @@ public class MonetizationManager : MonoBehaviour
 #region IAP Actions
     public void Purchase(string productId)
     {
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         // If Purchasing has not yet been set up ...
         if (!IsPurchasingInitialized())
         {
@@ -360,7 +360,7 @@ public class MonetizationManager : MonoBehaviour
     // Apple currently requires explicit purchase restoration for IAP, conditionally displaying a password prompt.
     public void RestorePurchases()
     {
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
         // If Purchasing has not yet been set up ...
         if (!IsPurchasingInitialized())
         {
@@ -404,10 +404,10 @@ public class MonetizationManager : MonoBehaviour
         var errorMessage = success ? "" : "";
         RestoreResult(success, errorMessage);
     }
-#endregion
+    #endregion
 
-#region IStoreListener
-#if UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
+    #region IStoreListener
+#if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
     public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
     {
         // Purchasing has succeeded initializing. Collect our Purchasing references.
@@ -470,9 +470,9 @@ public class MonetizationManager : MonoBehaviour
             "[" + TAG_PURCHASE + "]: FAIL. Product: " + product.definition.storeSpecificId + ", PurchaseFailureReason: " + failureReason);
     }
 #endif
-#endregion
+    #endregion
 
-#region Callback Events
+    #region Callback Events
     public static void PurchaseResult(bool success, string errorMessage = "", string errorLog = "")
     {
         if (!success)
@@ -494,10 +494,10 @@ public class MonetizationManager : MonoBehaviour
             RestoreCallback = null;
         }
     }
-#endregion
-    
-#region IUnityAdsListener
-#if UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
+    #endregion
+
+    #region IUnityAdsListener
+#if !NO_ADS && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
 
     public void OnUnityAdsReady(string placementId)
     {
@@ -522,5 +522,5 @@ public class MonetizationManager : MonoBehaviour
             showResultHandler.Invoke(ConvertToRemakeShowResult(showResult));
     }
 #endif
-#endregion
+    #endregion
 }
