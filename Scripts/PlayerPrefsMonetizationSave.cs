@@ -7,6 +7,24 @@ public class PlayerPrefsMonetizationSave : BaseMonetizationSave
     public const string Tag = "PlayerPrefsMonetizationSave";
     public const string KeyCurrencyName = "SaveCurrency";
     public const string KeyPurchasedItemsName = "SavePurchasedItems";
+    public bool clearCurrency;
+    public bool clearPurchasedItems;
+
+    private void Update()
+    {
+        if (clearCurrency)
+        {
+            PlayerPrefs.DeleteKey(KeyCurrencyName);
+            PlayerPrefs.Save();
+            clearCurrency = false;
+        }
+        if (clearPurchasedItems)
+        {
+            PlayerPrefs.DeleteKey(KeyPurchasedItemsName);
+            PlayerPrefs.Save();
+            clearPurchasedItems = false;
+        }
+    }
 
     public static string GetCurrencyKey(string name)
     {
