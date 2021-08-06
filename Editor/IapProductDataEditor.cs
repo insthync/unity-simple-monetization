@@ -57,7 +57,6 @@ public class IapProductDataEditor : Editor
             ProductCatalogEditor.ShowWindow();
         }
 #else
-        m_ProductIDProperty.stringValue = string.Empty;
         var defaultColor = GUI.color;
         GUI.color = Color.red;
         GUILayout.Label("You must install Unity Purchasing");
