@@ -33,7 +33,7 @@ public class InGameProductData : BaseProductData
                 {
                     cachePrices[price.id] = price.amount;
                 }
-                if (prices == null)
+                if (prices != null)
                 {
                     foreach (var price in prices)
                     {
