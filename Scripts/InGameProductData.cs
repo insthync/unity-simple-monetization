@@ -30,11 +30,18 @@ public class InGameProductData : BaseProductData
             {
                 cachePrices = new Dictionary<string, int>();
                 if (!string.IsNullOrEmpty(price.id))
-                    cachePrices[price.id] = price.amount;
-                foreach (var price in prices)
                 {
-                    if (!string.IsNullOrEmpty(price.id))
-                        cachePrices[price.id] = price.amount;
+                    cachePrices[price.id] = price.amount;
+                }
+                if (prices == null)
+                {
+                    foreach (var price in prices)
+                    {
+                        if (!string.IsNullOrEmpty(price.id))
+                        {
+                            cachePrices[price.id] = price.amount;
+                        }
+                    }
                 }
             }
             return cachePrices;
