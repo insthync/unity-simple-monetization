@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "InGamePackageData", menuName = "Monetization/In Game Package", order = 103)]
 public class InGamePackageData : InGameProductData
