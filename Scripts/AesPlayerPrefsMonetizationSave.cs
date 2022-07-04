@@ -12,6 +12,11 @@ public class AesPlayerPrefsMonetizationSave : BaseMonetizationSave
 
     public string salt;
 
+    private void Start()
+    {
+        IsPurchasedItemsLoaded = true;
+    }
+
     public static string GetCurrencyKey(string name)
     {
         return KeyCurrencyName + "_" + name;

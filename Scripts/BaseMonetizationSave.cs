@@ -34,6 +34,7 @@ public abstract class BaseMonetizationSave : MonoBehaviour
         }
     }
 
+    public bool IsPurchasedItemsLoaded { get; protected set; } = false;
     public abstract int GetCurrency(string name);
     public abstract void SetCurrency(string name, int amount);
     public abstract bool AddCurrency(string name, int amount);

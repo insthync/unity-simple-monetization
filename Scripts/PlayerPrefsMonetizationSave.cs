@@ -8,6 +8,11 @@ public class PlayerPrefsMonetizationSave : BaseMonetizationSave
     public bool clearCurrency;
     public bool clearPurchasedItems;
 
+    private void Start()
+    {
+        IsPurchasedItemsLoaded = true;
+    }
+
     private void Update()
     {
         if (clearCurrency)
@@ -58,7 +63,7 @@ public class PlayerPrefsMonetizationSave : BaseMonetizationSave
     public override PurchasedItems GetPurchasedItems()
     {
         var json = PlayerPrefs.GetString(KeyPurchasedItemsName, "{}");
-        Debug.Log("["+ Tag + "] Loading Items From Json: " + json);
+        Debug.Log("[" + Tag + "] Loading Items From Json: " + json);
         var result = JsonUtility.FromJson<PurchasedItems>(json);
         if (result == null)
             result = new PurchasedItems();
@@ -68,7 +73,7 @@ public class PlayerPrefsMonetizationSave : BaseMonetizationSave
     public override void SetPurchasedItems(PurchasedItems purchasedItems)
     {
         var json = JsonUtility.ToJson(purchasedItems);
-        Debug.Log("["+ Tag + "] Saving Items To Json: " + json);
+        Debug.Log("[" + Tag + "] Saving Items To Json: " + json);
         PlayerPrefs.SetString(KeyPurchasedItemsName, json);
         PlayerPrefs.Save();
     }
