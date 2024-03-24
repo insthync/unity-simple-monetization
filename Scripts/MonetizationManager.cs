@@ -8,12 +8,13 @@ using UnityEngine.Advertisements;
 #endif
 #if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
 using UnityEngine.Purchasing;
+using UnityEngine.Purchasing.Extension;
 #endif
 
 #if !NO_IAP && !NO_ADS && UNITY_PURCHASING && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
-public class MonetizationManager : MonoBehaviour, IStoreListener, IUnityAdsInitializationListener, IUnityAdsLoadListener, IUnityAdsShowListener
+public class MonetizationManager : MonoBehaviour, IDetailedStoreListener, IUnityAdsInitializationListener, IUnityAdsLoadListener, IUnityAdsShowListener
 #elif !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
-public class MonetizationManager : MonoBehaviour, IStoreListener
+public class MonetizationManager : MonoBehaviour, IDetailedStoreListener
 #elif !NO_ADS && UNITY_ADS && (UNITY_IOS || UNITY_ANDROID)
 public class MonetizationManager : MonoBehaviour, IUnityAdsListener
 #else
@@ -115,7 +116,7 @@ public class MonetizationManager : MonoBehaviour
         InitializeAdsRewards();
     }
 
-#region Initailize functions
+    #region Initailize functions
     private void InitializeAds()
     {
 #if !NO_ADS && UNITY_ADS && UNITY_ANDROID
@@ -320,9 +321,9 @@ public class MonetizationManager : MonoBehaviour
             Save.AddPurchasedItem(item.name);
         }
     }
-#endregion
+    #endregion
 
-#region IAP Actions
+    #region IAP Actions
     public void Purchase(string productId)
     {
 #if !NO_IAP && UNITY_PURCHASING && (UNITY_IOS || UNITY_ANDROID)
@@ -384,9 +385,9 @@ public class MonetizationManager : MonoBehaviour
 #endif
     }
 
-    private void OnTransactionsRestored(bool success)
+    private void OnTransactionsRestored(bool success, string error)
     {
-        var errorMessage = success ? "" : "";
+        var errorMessage = success ? "" : error;
         RestoreResult(success, errorMessage);
     }
     #endregion
@@ -405,6 +406,10 @@ public class MonetizationManager : MonoBehaviour
         Debug.Log(logMessage);
     }
 
+    public void OnInitializeFailed(InitializationFailureReason error, string message)
+    {
+        OnInitializeFailed(error);
+    }
 
     public void OnInitializeFailed(InitializationFailureReason error)
     {
@@ -412,7 +417,6 @@ public class MonetizationManager : MonoBehaviour
         var errorMessage = "[" + TAG_INIT + "]: Fail. InitializationFailureReason:" + error;
         Debug.LogError(errorMessage);
     }
-
 
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
     {
@@ -444,6 +448,11 @@ public class MonetizationManager : MonoBehaviour
         // saving purchased products to the cloud, and when that save is delayed.
         PurchaseResult(true);
         return PurchaseProcessingResult.Complete;
+    }
+
+    public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
+    {
+        OnPurchaseFailed(product, failureDescription.reason);
     }
 
     public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
@@ -486,7 +495,7 @@ public class MonetizationManager : MonoBehaviour
     public void OnUnityAdsDidFinish(string placementId, ShowResult showResult)
     {
         System.Action<RemakeShowResult> showResultHandler;
-        if (ShowResultCallbacks.TryGetValue(placementId, out showResultHandler) && 
+        if (ShowResultCallbacks.TryGetValue(placementId, out showResultHandler) &&
             showResultHandler != null)
             showResultHandler.Invoke(ConvertToRemakeShowResult(showResult));
     }
